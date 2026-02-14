@@ -1,0 +1,14 @@
+{
+  "name": "psf",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "backend": "cd backend && npx nodemon server.js",
+    "frontend": "cd parking-slot-finder/frontend && npm start",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\""
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2",
+    "react-router-dom": "^6.30.3"
+  }
+}
