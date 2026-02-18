@@ -1,14 +1,18 @@
 import express from "express";
 import {
+  adminLogin,
   getAdminProfile,
   updateAdminProfile,
   getAdminStats,
   getAllUsers,
-  deleteUserByAdmin 
+  deleteUserByAdmin,
 } from "../controllers/adminController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+
+/* ================= ADMIN LOGIN (PUBLIC) ================= */
+router.post("/login", adminLogin);
 
 /* ================= ADMIN PROFILE ================= */
 router.get("/profile", authMiddleware, getAdminProfile);

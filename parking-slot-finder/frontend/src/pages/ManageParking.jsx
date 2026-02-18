@@ -56,7 +56,7 @@ export default function ManageParking() {
     price: "",
   });
 
-  const [mapCenter, setMapCenter] = useState([18.5204, 73.8567]); // Pune
+  const [mapCenter, setMapCenter] = useState([18.5204, 73.8567]);
   const [marker, setMarker] = useState(null);
   const [parkings, setParkings] = useState([]);
 
@@ -77,7 +77,7 @@ export default function ManageParking() {
     }
   };
 
-  /* ================= AUTO LOCATION SEARCH (LIKE USER MAP) ================= */
+  /* ================= AUTO LOCATION SEARCH ================= */
   useEffect(() => {
     if (!form.location.trim()) return;
 
@@ -162,21 +162,19 @@ export default function ManageParking() {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Manage Parking Slots</h1>
+    <div className="mp-container">
+      <h1 className="mp-title">Manage Parking Slots</h1>
 
       {/* FORM */}
-      <div className="bg-white p-6 rounded shadow mb-4">
-        <div className="grid grid-cols-4 gap-4">
+      <div className="mp-form-card">
+        <div className="mp-form-grid">
           <input
             placeholder="Parking Name"
-            className="border p-2"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
           <input
             placeholder="Search Location"
-            className="border p-2"
             value={form.location}
             onChange={(e) =>
               setForm({ ...form, location: e.target.value })
@@ -184,7 +182,6 @@ export default function ManageParking() {
           />
           <input
             placeholder="Capacity"
-            className="border p-2"
             value={form.capacity}
             onChange={(e) =>
               setForm({ ...form, capacity: e.target.value })
@@ -192,7 +189,6 @@ export default function ManageParking() {
           />
           <input
             placeholder="Price"
-            className="border p-2"
             value={form.price}
             onChange={(e) =>
               setForm({ ...form, price: e.target.value })
@@ -200,19 +196,15 @@ export default function ManageParking() {
           />
         </div>
 
-        <button
-          onClick={handleAddParking}
-          className="mt-4 bg-blue-600 text-white px-6 py-2 rounded"
-        >
-          Add Parking
+        <button onClick={handleAddParking} className="mp-add-btn">
+          ➕ Add Parking
         </button>
       </div>
 
       {/* MAP */}
-      <div className="bg-white rounded shadow mb-6" style={{ height: 420 }}>
-        <MapContainer center={mapCenter} zoom={13} className="h-full w-full">
+      <div className="mp-map-card">
+        <MapContainer center={mapCenter} zoom={13} className="mp-map">
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
           <FlyToLocation position={mapCenter} />
 
           {marker && (
@@ -224,45 +216,134 @@ export default function ManageParking() {
       </div>
 
       {/* TABLE */}
-      <table className="w-full bg-white shadow rounded">
-        <thead className="bg-gray-200">
-          <tr>
-            <th>Name</th>
-            <th>Location</th>
-            <th>Lat</th>
-            <th>Lng</th>
-            <th>Capacity</th>
-            <th>Price</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {parkings.map((p) => (
-            <tr key={p._id} className="text-center border">
-              <td>{p.name}</td>
-              <td>{p.location}</td>
-              <td>{p.lat}</td>
-              <td>{p.lng}</td>
-              <td>{p.capacity}</td>
-              <td>{p.price}</td>
-              <td className="space-x-2">
-                <button
-                  onClick={() => navigate(`/admin/edit-parking/${p._id}`)}
-                  className="bg-yellow-400 text-white px-2 py-1 rounded"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => deleteParking(p._id)}
-                  className="bg-red-500 text-white px-2 py-1 rounded"
-                >
-                  Delete
-                </button>
-              </td>
+      <div className="mp-table-card">
+        <table className="mp-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Location</th>
+              <th>Lat</th>
+              <th>Lng</th>
+              <th>Capacity</th>
+              <th>Price</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {parkings.map((p) => (
+              <tr key={p._id}>
+                <td>{p.name}</td>
+                <td>{p.location}</td>
+                <td>{p.lat}</td>
+                <td>{p.lng}</td>
+                <td>{p.capacity}</td>
+                <td>₹{p.price}</td>
+                <td>
+                  <button
+                    className="edit-btn"
+                    onClick={() => navigate(`/admin/edit-parking/${p._id}`)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="delete-btn"
+                    onClick={() => deleteParking(p._id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ================= STYLES ================= */}
+      <style>{`
+        .mp-container { padding: 20px; }
+        .mp-title {
+          font-size: 32px;
+          font-weight: 800;
+          margin-bottom: 24px;
+          background: linear-gradient(90deg,#7c3aed,#9333ea);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .mp-form-card {
+          background:#fff;
+          padding:22px;
+          border-radius:20px;
+          box-shadow:0 20px 45px rgba(0,0,0,.1);
+          margin-bottom:26px;
+        }
+        .mp-form-grid {
+          display:grid;
+          grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+          gap:14px;
+        }
+        .mp-form-grid input {
+          padding:12px 14px;
+          border-radius:10px;
+          border:1px solid #e5e7eb;
+        }
+        .mp-add-btn {
+          margin-top:18px;
+          background:linear-gradient(135deg,#7c3aed,#9333ea);
+          color:#fff;
+          padding:12px 22px;
+          border:none;
+          border-radius:12px;
+          cursor:pointer;
+          font-weight:600;
+        }
+        .mp-map-card {
+          height:420px;
+          border-radius:22px;
+          overflow:hidden;
+          box-shadow:0 30px 70px rgba(0,0,0,.18);
+          margin-bottom:28px;
+        }
+        .mp-map { height:100%; width:100%; }
+        .mp-table-card {
+          background:#fff;
+          padding:20px;
+          border-radius:20px;
+          box-shadow:0 20px 45px rgba(0,0,0,.1);
+        }
+        .mp-table {
+          width:100%;
+          border-collapse:separate;
+          border-spacing:0 12px;
+        }
+        .mp-table th { text-align:left; font-size:13px; color:#64748b; }
+        .mp-table tbody tr {
+          background:#f9fafb;
+          transition:.25s;
+        }
+        .mp-table tbody tr:hover {
+          transform:translateY(-3px);
+          box-shadow:0 18px 40px rgba(0,0,0,.12);
+          background:#fff;
+        }
+        .mp-table td { padding:14px; font-size:14px; }
+        .edit-btn {
+          background:#facc15;
+          border:none;
+          padding:6px 12px;
+          border-radius:8px;
+          margin-right:6px;
+          cursor:pointer;
+        }
+        .delete-btn {
+          background:#ef4444;
+          color:#fff;
+          border:none;
+          padding:6px 12px;
+          border-radius:8px;
+          cursor:pointer;
+        }
+      `}</style>
     </div>
   );
 }

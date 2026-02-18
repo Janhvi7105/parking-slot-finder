@@ -1,32 +1,72 @@
-const User = require("../models/User");
+import User from "../models/User.js";
+import bcrypt from "bcryptjs";
 
-// GET PROFILE
-exports.getProfile = async (req, res) => {
+/* =====================================================
+   GET USER PROFILE
+   GET /api/users/profile
+===================================================== */
+export const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select("-password");
-    if (!user) return res.status(404).json({ message: "User not found" });
+    const userId = req.user.id; // 🔐 from JWT
 
-    res.json(user);
-  } catch (err) {
-    console.error("Get profile error:", err);
-    res.status(500).json({ message: "Server error" });
+    const user = await User.findById(userId).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.error("❌ Get user profile error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch profile",
+    });
   }
 };
 
-// UPDATE PROFILE
-exports.updateProfile = async (req, res) => {
+/* =====================================================
+   UPDATE USER PROFILE
+   PUT /api/users/profile
+===================================================== */
+export const updateUserProfile = async (req, res) => {
   try {
-    const { name, email } = req.body;
+    const userId = req.user.id; // 🔐 from JWT
+    const { name, email, password } = req.body;
+
+    const updateData = { name, email };
+
+    /* 🔐 HASH PASSWORD ONLY IF PROVIDED */
+    if (password && password.trim() !== "") {
+      const salt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(password, salt);
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      { name, email },
-      { new: true }
-    );
+      userId,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).select("-password");
 
-    res.json(updatedUser);
-  } catch (err) {
-    console.error("Update profile error:", err);
-    res.status(500).json({ message: "Update failed" });
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("❌ Update user profile error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Profile update failed",
+    });
   }
 };

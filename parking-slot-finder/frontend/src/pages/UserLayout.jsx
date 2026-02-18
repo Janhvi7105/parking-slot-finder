@@ -9,75 +9,109 @@ export default function UserLayout() {
   };
 
   const linkStyle = ({ isActive }) => ({
-    color: isActive ? "#fff" : "#ccc",
-    background: isActive ? "#1abc9c" : "transparent",
-    padding: "10px",
-    borderRadius: "6px",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "12px 16px",
+    borderRadius: "14px",
+    fontSize: "15px",
+    fontWeight: isActive ? "700" : "500",
+    color: isActive ? "#ffffff" : "#cbd5e1",
+    background: isActive
+      ? "linear-gradient(135deg, #10b981, #14b8a6)"
+      : "transparent",
     textDecoration: "none",
-    marginBottom: "8px",
-    display: "block"
+    marginBottom: "10px",
+    transition: "all 0.3s ease",
+    boxShadow: isActive
+      ? "0 10px 25px rgba(16,185,129,0.45)"
+      : "none",
   });
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
 
-      {/* SIDEBAR */}
+      {/* ================= SIDEBAR ================= */}
       <aside
         style={{
-          width: "240px",
-          background: "#2f3b52",
+          width: "260px",
+          background: "linear-gradient(180deg, #0f172a, #1e293b)",
           color: "#fff",
-          padding: "20px",
+          padding: "24px 20px",
           display: "flex",
-          flexDirection: "column"
+          flexDirection: "column",
+          boxShadow: "10px 0 40px rgba(0,0,0,0.35)",
         }}
       >
-        <h2 style={{ marginBottom: "30px" }}>🚗 Parking</h2>
+        {/* LOGO */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            marginBottom: "40px",
+          }}
+        >
+          <span style={{ fontSize: "26px" }}>🚗</span>
+          <h2 style={{ fontSize: "20px", fontWeight: "800" }}>
+            Parking
+          </h2>
+        </div>
 
+        {/* NAV LINKS */}
         <NavLink to="/user" end style={linkStyle}>
-          Dashboard
+          📊 Dashboard
         </NavLink>
 
         <NavLink to="/user/search" style={linkStyle}>
-          Search Parking
+          🔍 Search Parking
         </NavLink>
 
         <NavLink to="/user/bookings" style={linkStyle}>
-          Booking History
+          📖 Booking History
         </NavLink>
 
         <NavLink to="/user/profile" style={linkStyle}>
-          My Profile
+          👤 My Profile
         </NavLink>
 
+        {/* LOGOUT */}
         <button
           onClick={logout}
           style={{
             marginTop: "auto",
-            padding: "10px",
-            background: "#e74c3c",
+            padding: "14px",
+            background: "linear-gradient(135deg, #ef4444, #dc2626)",
             border: "none",
             color: "#fff",
-            borderRadius: "6px",
-            cursor: "pointer"
+            borderRadius: "16px",
+            fontSize: "15px",
+            fontWeight: "700",
+            cursor: "pointer",
+            transition: "0.3s",
           }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.transform = "translateY(-2px)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.transform = "translateY(0)")
+          }
         >
-          Logout
+          🚪 Logout
         </button>
       </aside>
 
-      {/* PAGE CONTENT */}
+      {/* ================= PAGE CONTENT ================= */}
       <main
         style={{
           flex: 1,
-          background: "#f5f7fa",
-          padding: "30px",
-          overflowY: "auto"
+          background: "linear-gradient(180deg, #f8fafc, #eef2ff)",
+          padding: "32px",
+          overflowY: "auto",
         }}
       >
         <Outlet />
       </main>
-
     </div>
   );
 }

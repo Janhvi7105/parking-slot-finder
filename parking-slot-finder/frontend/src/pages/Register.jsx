@@ -1,11 +1,9 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useAdminStats } from "../context/AdminStatsContext";
 
 export default function Register() {
   const navigate = useNavigate();
-  const { triggerRefresh } = useAdminStats();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -23,56 +21,106 @@ export default function Register() {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      triggerRefresh(); // 🔥 LIVE TOTAL USERS UPDATE
-
       navigate("/user");
     } catch (err) {
+      console.error("Registration error:", err);
       alert("Registration failed");
-      console.error(err);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 to-black">
-      <form
-        onSubmit={handleRegister}
-        className="bg-gray-800 p-8 rounded-xl shadow-xl w-96 text-white"
-      >
-        <h2 className="text-2xl font-bold mb-6 text-center">Create Account</h2>
+    <div className="register-bg">
+      <form className="register-card" onSubmit={handleRegister}>
+        <h2>Create Account</h2>
 
         <input
-          className="w-full mb-4 p-3 rounded bg-gray-700"
-          placeholder="Name"
+          type="text"
+          placeholder="Full Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
         />
 
         <input
-          className="w-full mb-4 p-3 rounded bg-gray-700"
-          placeholder="Email"
           type="email"
+          placeholder="Email Address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
 
         <input
-          className="w-full mb-6 p-3 rounded bg-gray-700"
-          placeholder="Password"
           type="password"
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
 
-        <button
-          type="submit"
-          className="w-full bg-indigo-600 py-3 rounded hover:bg-indigo-700"
-        >
-          Register
-        </button>
+        <button type="submit">Register</button>
       </form>
+
+      {/* ================= STYLES ================= */}
+      <style>{`
+        .register-bg {
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #064e3b, #022c22);
+        }
+
+        .register-card {
+          width: 380px;
+          padding: 38px;
+          border-radius: 20px;
+          background: rgba(255, 255, 255, 0.12);
+          backdrop-filter: blur(20px);
+          box-shadow: 0 35px 70px rgba(0,0,0,0.45);
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .register-card h2 {
+          text-align: center;
+          font-size: 28px;
+          font-weight: 800;
+          color: #ecfdf5;
+          margin-bottom: 12px;
+          letter-spacing: 0.5px;
+        }
+
+        .register-card input {
+          padding: 14px 16px;
+          border-radius: 12px;
+          border: none;
+          font-size: 15px;
+          outline: none;
+        }
+
+        .register-card input:focus {
+          box-shadow: 0 0 0 3px rgba(34,197,94,0.6);
+        }
+
+        .register-card button {
+          margin-top: 10px;
+          padding: 14px;
+          border-radius: 14px;
+          border: none;
+          background: linear-gradient(135deg, #22c55e, #16a34a);
+          color: white;
+          font-size: 16px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .register-card button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 18px 35px rgba(34,197,94,0.6);
+        }
+      `}</style>
     </div>
   );
 }

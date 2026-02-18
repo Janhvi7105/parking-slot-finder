@@ -1,6 +1,36 @@
-const router = require("express").Router();
-const { bookSlot } = require("../controllers/bookingController");
+import express from "express";
+import {
+  getMyBookings,
+  getAllBookingsForAdmin,
+  confirmBookingByAdmin,
+  cancelBookingByAdmin,
+} from "../controllers/bookingController.js";
 
-router.post("/book", bookSlot);
+import authMiddleware from "../middleware/authMiddleware.js";
 
-module.exports = router;
+const router = express.Router();
+
+
+/* ================= USER ROUTES ================= */
+// User booking history
+router.get("/my-bookings/:userId", getMyBookings);
+
+/* ================= ADMIN ROUTES ================= */
+// Get all reservations (Admin)
+router.get("/admin/all", authMiddleware, getAllBookingsForAdmin);
+
+// Confirm booking (Reserved → Confirmed)
+router.put(
+  "/admin/confirm/:bookingId",
+  authMiddleware,
+  confirmBookingByAdmin
+);
+
+// Cancel booking (Reserved → Cancelled)
+router.put(
+  "/admin/cancel/:bookingId",
+  authMiddleware,
+  cancelBookingByAdmin
+);
+
+export default router;

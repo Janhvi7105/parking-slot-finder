@@ -11,8 +11,8 @@ import UserDashboard from "./pages/UserDashboard";
 import SearchParking from "./pages/SearchParking";
 import BookingHistory from "./pages/BookingHistory";
 import UserProfile from "./pages/UserProfile";
-import BookParking from "./pages/BookParking";   // ✅ BOOK PAGE
-import Payment from "./pages/Payment";           // ✅ PAYMENT PAGE
+import BookParking from "./pages/BookParking";
+import Payment from "./pages/Payment";
 
 /* ================= ADMIN PAGES ================= */
 import AdminLogin from "./pages/AdminLogin";
@@ -21,7 +21,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ManageParking from "./pages/ManageParking";
 import EditParking from "./pages/EditParking";
 import AdminProfile from "./pages/AdminProfile";
-import Reservations from "./pages/Reservations";
+import AdminReservations from "./pages/AdminReservations"; // ✅ FIXED
 import Users from "./pages/Users";
 
 /* ================= CONTEXT ================= */
@@ -60,8 +60,8 @@ function App() {
         >
           <Route index element={<UserDashboard />} />
           <Route path="search" element={<SearchParking />} />
-          <Route path="book/:id" element={<BookParking />} />     {/* ✅ */}
-          <Route path="payment" element={<Payment />} />          {/* ✅ */}
+          <Route path="book/:id" element={<BookParking />} />
+          <Route path="payment" element={<Payment />} />
           <Route path="bookings" element={<BookingHistory />} />
           <Route path="profile" element={<UserProfile />} />
         </Route>
@@ -83,7 +83,7 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="manage-parking" element={<ManageParking />} />
           <Route path="edit-parking/:id" element={<EditParking />} />
-          <Route path="reservations" element={<Reservations />} />
+          <Route path="reservations" element={<AdminReservations />} /> {/* ✅ */}
           <Route path="users" element={<Users />} />
           <Route path="profile" element={<AdminProfile />} />
         </Route>

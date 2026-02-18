@@ -11,6 +11,7 @@ export default function Users() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("token");
+
       const res = await axios.get(
         "http://localhost:5000/api/admin/users",
         {
@@ -19,9 +20,9 @@ export default function Users() {
           },
         }
       );
-      setUsers(res.data);
+
+      setUsers(res.data.users || []);
     } catch (err) {
-      console.error(err);
       alert("Failed to load users");
     }
   };
@@ -31,14 +32,15 @@ export default function Users() {
 
     try {
       const token = localStorage.getItem("token");
-   await axios.delete(
-  `http://localhost:5000/api/admin/users/${id}`,
-  {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }
-);
+
+      await axios.delete(
+        `http://localhost:5000/api/admin/users/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       fetchUsers();
     } catch (err) {
@@ -47,43 +49,147 @@ export default function Users() {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Manage Users</h1>
+    <div className="users-page">
+      <h2 className="page-title">Manage Users</h2>
 
-      <table className="w-full bg-white shadow rounded">
-        <thead className="bg-gray-200">
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-
-        <tbody>
+      {users.length === 0 ? (
+        <div className="empty-state">No users found</div>
+      ) : (
+        <div className="users-grid">
           {users.map((u) => (
-            <tr key={u._id} className="text-center border">
-              <td>{u.name}</td>
-              <td>{u.email}</td>
-              <td>{u.role}</td>
-              <td>
+            <div className="user-card" key={u._id}>
+              <div className="user-info">
+                <h3>{u.name}</h3>
+                <p>{u.email}</p>
+              </div>
+
+              <div className="user-actions">
+                <span
+                  className={`role ${
+                    u.role === "admin" ? "admin" : "user"
+                  }`}
+                >
+                  {u.role}
+                </span>
+
                 {u.role === "admin" ? (
-                  <span className="bg-gray-700 text-white px-3 py-1 rounded">
-                    Admin
-                  </span>
+                  <span className="locked">Protected</span>
                 ) : (
                   <button
+                    className="delete-btn"
                     onClick={() => deleteUser(u._id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded"
                   >
                     Delete
                   </button>
                 )}
-              </td>
-            </tr>
+              </div>
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      )}
+
+      {/* ================= STYLES ================= */}
+      <style>{`
+        .users-page {
+          padding: 30px;
+          background: linear-gradient(180deg, #f8fafc, #eef2ff);
+          min-height: 100vh;
+        }
+
+        .page-title {
+          font-size: 28px;
+          font-weight: 800;
+          margin-bottom: 24px;
+        }
+
+        .users-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+          gap: 20px;
+        }
+
+        .user-card {
+          background: #fff;
+          border-radius: 18px;
+          padding: 20px;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          transition: 0.25s;
+        }
+
+        .user-card:hover {
+          transform: translateY(-6px);
+          box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+        }
+
+        .user-info h3 {
+          margin: 0;
+          font-size: 18px;
+          font-weight: 700;
+        }
+
+        .user-info p {
+          margin: 4px 0 0;
+          font-size: 14px;
+          color: #64748b;
+        }
+
+        .user-actions {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 10px;
+        }
+
+        .role {
+          padding: 6px 14px;
+          border-radius: 999px;
+          font-size: 12px;
+          font-weight: 700;
+          color: #fff;
+          text-transform: uppercase;
+        }
+
+        .role.admin {
+          background: #6366f1;
+        }
+
+        .role.user {
+          background: #22c55e;
+        }
+
+        .delete-btn {
+          background: #ef4444;
+          color: #fff;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 10px;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .delete-btn:hover {
+          background: #dc2626;
+        }
+
+        .locked {
+          font-size: 13px;
+          color: #9ca3af;
+          font-weight: 600;
+        }
+
+        .empty-state {
+          background: #fff;
+          padding: 40px;
+          border-radius: 16px;
+          text-align: center;
+          color: #64748b;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        }
+      `}</style>
     </div>
   );
 }
