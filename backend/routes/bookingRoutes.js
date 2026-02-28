@@ -1,36 +1,45 @@
 import express from "express";
-import {
-  getMyBookings,
-  getAllBookingsForAdmin,
-  confirmBookingByAdmin,
-  cancelBookingByAdmin,
-} from "../controllers/bookingController.js";
-
+import * as bookingController from "../controllers/bookingController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+/* 🔥 DEBUG — REMOVE AFTER CONFIRMING */
+console.log(
+  "📦 bookingController keys:",
+  Object.keys(bookingController)
+);
 
-/* ================= USER ROUTES ================= */
-// User booking history
-router.get("/my-bookings/:userId", getMyBookings);
+/* ================= USER ================= */
+router.get(
+  "/my-bookings/:userId",
+  bookingController.getMyBookings
+);
 
-/* ================= ADMIN ROUTES ================= */
-// Get all reservations (Admin)
-router.get("/admin/all", authMiddleware, getAllBookingsForAdmin);
+/* ================= ADMIN ================= */
+router.get(
+  "/admin/all",
+  authMiddleware,
+  bookingController.getAllBookingsForAdmin
+);
 
-// Confirm booking (Reserved → Confirmed)
 router.put(
   "/admin/confirm/:bookingId",
   authMiddleware,
-  confirmBookingByAdmin
+  bookingController.confirmBookingByAdmin
 );
 
-// Cancel booking (Reserved → Cancelled)
 router.put(
   "/admin/cancel/:bookingId",
   authMiddleware,
-  cancelBookingByAdmin
+  bookingController.cancelBookingByAdmin
+);
+
+/* ================= FEEDBACK ================= */
+router.post(
+  "/feedback",
+  authMiddleware,
+  bookingController.submitFeedback
 );
 
 export default router;

@@ -32,33 +32,49 @@ export default function AdminReservations() {
   }, [fetchBookings]);
 
   /* ================= CONFIRM BOOKING ================= */
-  const confirmBooking = async (id) => {
-    await axios.put(
-      `http://localhost:5000/api/bookings/admin/confirm/${id}`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+  const confirmBooking = async (id, status) => {
+    // ✅ EXTRA SAFETY (prevents Axios 400)
+    if (status !== "Reserved") return;
 
-    setBookings((prev) =>
-      prev.map((b) =>
-        b._id === id ? { ...b, status: "Confirmed" } : b
-      )
-    );
+    try {
+      await axios.put(
+        `http://localhost:5000/api/bookings/admin/confirm/${id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setBookings((prev) =>
+        prev.map((b) =>
+          b._id === id ? { ...b, status: "Confirmed" } : b
+        )
+      );
+    } catch (err) {
+      console.error("Confirm booking error:", err);
+      alert("Failed to confirm booking");
+    }
   };
 
   /* ================= CANCEL BOOKING ================= */
-  const cancelBooking = async (id) => {
-    await axios.put(
-      `http://localhost:5000/api/bookings/admin/cancel/${id}`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+  const cancelBooking = async (id, status) => {
+    // ✅ EXTRA SAFETY
+    if (status !== "Reserved") return;
 
-    setBookings((prev) =>
-      prev.map((b) =>
-        b._id === id ? { ...b, status: "Cancelled" } : b
-      )
-    );
+    try {
+      await axios.put(
+        `http://localhost:5000/api/bookings/admin/cancel/${id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setBookings((prev) =>
+        prev.map((b) =>
+          b._id === id ? { ...b, status: "Cancelled" } : b
+        )
+      );
+    } catch (err) {
+      console.error("Cancel booking error:", err);
+      alert("Failed to cancel booking");
+    }
   };
 
   if (loading) {
@@ -105,13 +121,13 @@ export default function AdminReservations() {
                 <>
                   <button
                     className="btn confirm"
-                    onClick={() => confirmBooking(b._id)}
+                    onClick={() => confirmBooking(b._id, b.status)}
                   >
                     ✔ Confirm
                   </button>
                   <button
                     className="btn cancel"
-                    onClick={() => cancelBooking(b._id)}
+                    onClick={() => cancelBooking(b._id, b.status)}
                   >
                     ✖ Cancel
                   </button>
@@ -124,7 +140,7 @@ export default function AdminReservations() {
         ))}
       </div>
 
-      {/* ================= STYLES (UI ONLY) ================= */}
+      {/* ================= STYLES (UNCHANGED) ================= */}
       <style>{`
         .ar-container {
           padding: 40px;

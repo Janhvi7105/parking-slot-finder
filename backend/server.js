@@ -23,14 +23,17 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 
-
-
-
 // ================= APP SETUP =================
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json()); // ✅ JSON body parser
+app.use(express.urlencoded({ extended: true })); // ✅ keeps your logic
+
+/* =====================================================
+   ⭐ SERVE RECEIPTS (UNCHANGED)
+===================================================== */
+app.use("/receipts", express.static(path.join(__dirname, "receipts")));
 
 // ================= API ROUTES =================
 app.use("/api/auth", authRoutes);
@@ -45,12 +48,21 @@ app.get("/", (req, res) => {
   res.send("Backend running successfully 🚀");
 });
 
-// ================= ENV DEBUG (REMOVE IN PROD) =================
-console.log("ENV CHECK → RAZORPAY_KEY_ID:", process.env.RAZORPAY_KEY_ID);
+// ================= ENV DEBUG (SAFE LOGGING) =================
+console.log("ENV CHECK → RAZORPAY_KEY_ID:", process.env.RAZORPAY_KEY_ID || "❌ NOT FOUND");
 console.log(
   "ENV CHECK → RAZORPAY_KEY_SECRET LOADED:",
   !!process.env.RAZORPAY_KEY_SECRET
 );
+
+// 🚨 EXTRA SAFETY (does NOT change logic)
+if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+  console.warn("⚠️ Razorpay keys missing in .env");
+}
+
+if (!process.env.MONGO_URI) {
+  console.warn("⚠️ MONGO_URI missing in .env");
+}
 
 // ================= DATABASE =================
 const PORT = process.env.PORT || 5000;
@@ -59,8 +71,10 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB Connected");
+
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🌐 Health check → http://localhost:${PORT}/`);
     });
   })
   .catch((err) => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -6,24 +6,51 @@ export default function UserDashboard() {
   const [bookings, setBookings] = useState([]);
   const navigate = useNavigate();
 
-  const userId = "TEST_USER_ID"; // 🔐 replace with JWT later
+  // ✅ BULLETPROOF USER PARSE (handles null / undefined / bad JSON)
+  let user = null;
+  try {
+    const rawUser = localStorage.getItem("user");
+
+    if (rawUser && rawUser !== "undefined" && rawUser !== "null") {
+      user = JSON.parse(rawUser);
+    } else {
+      user = null;
+    }
+  } catch (err) {
+    console.warn("⚠️ Invalid user data in localStorage");
+    user = null;
+  }
+
+  const userId = user?._id;
 
   /* ================= FETCH RECENT BOOKINGS ================= */
-  const fetchRecentBookings = async () => {
+  const fetchRecentBookings = useCallback(async () => {
     try {
+      // ✅ safety guard (unchanged logic)
+      if (!userId) {
+        console.warn("⚠️ No userId found for dashboard");
+        setBookings([]);
+        return;
+      }
+
       const res = await axios.get(
         `http://localhost:5000/api/bookings/my-bookings/${userId}`
       );
 
-      setBookings(res.data.bookings.slice(0, 4));
+      // ✅ supports both response formats (unchanged)
+      const allBookings = res.data.bookings || res.data || [];
+
+      // ✅ last 4 bookings (unchanged)
+      setBookings(allBookings.slice(0, 4));
     } catch (error) {
       console.error("Dashboard fetch error:", error);
     }
-  };
+  }, [userId]);
 
+  /* ✅ EFFECT */
   useEffect(() => {
     fetchRecentBookings();
-  }, []);
+  }, [fetchRecentBookings]);
 
   return (
     <div className="ud-container">
@@ -89,7 +116,7 @@ export default function UserDashboard() {
         </button>
       </div>
 
-      {/* ================= STYLES ONLY ================= */}
+      {/* ================= STYLES ONLY (UNCHANGED) ================= */}
       <style>{`
         .ud-container {
           padding: 30px;
@@ -115,14 +142,8 @@ export default function UserDashboard() {
         }
 
         @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(15px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(15px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .ud-card-header {

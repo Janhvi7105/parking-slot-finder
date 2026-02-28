@@ -4,15 +4,25 @@ const bookingSchema = new mongoose.Schema(
   {
     /* ================= USER DETAILS ================= */
     userId: {
-      type: String,              // ✅ TEMP string (JWT ObjectId later)
+      type: String,
       required: true,
       index: true,
+      trim: true,
     },
 
     userName: {
-      type: String,              // 👤 Admin reservation view
+      type: String,
       required: true,
       trim: true,
+    },
+
+    // ⭐ HARDENED EMAIL FIELD (no logic change)
+    userEmail: {
+      type: String,
+      trim: true,
+      lowercase: true, // ✅ ensures consistent email
+      default: "",     // ✅ keeps your existing behavior
+      index: true,
     },
 
     /* ================= PARKING DETAILS ================= */
@@ -20,6 +30,7 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       required: true,
       index: true,
+      trim: true,
     },
 
     parkingName: {
@@ -56,7 +67,6 @@ const bookingSchema = new mongoose.Schema(
         price: { type: Number, default: 0 },
       },
     ],
-    default: [],
 
     /* ================= PAYMENT DETAILS ================= */
     amount: {
@@ -68,13 +78,15 @@ const bookingSchema = new mongoose.Schema(
     paymentId: {
       type: String,
       trim: true,
+      index: true, // ✅ helps admin search payments
     },
 
     orderId: {
       type: String,
       trim: true,
-      unique: true,              // 🔥 PREVENT DUPLICATE BOOKINGS
+      unique: true,
       index: true,
+      sparse: true,
     },
 
     /* ================= BOOKING STATUS ================= */
@@ -82,10 +94,17 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       enum: ["Reserved", "Confirmed", "Cancelled"],
       default: "Reserved",
+      index: true, // ✅ faster filtering in admin panel
     },
 
     confirmedAt: {
       type: Date,
+    },
+
+    /* ================= RECEIPT ================= */
+    receiptUrl: {
+      type: String,
+      default: "",
     },
 
     /* ================= FEEDBACK ================= */
@@ -94,10 +113,12 @@ const bookingSchema = new mongoose.Schema(
         type: Number,
         min: 1,
         max: 5,
+        default: null, // ✅ prevents undefined issues
       },
       comment: {
         type: String,
         trim: true,
+        default: "",
       },
       givenAt: {
         type: Date,
@@ -107,11 +128,29 @@ const bookingSchema = new mongoose.Schema(
     feedbackSubmitted: {
       type: Boolean,
       default: false,
+      index: true, // ✅ admin can filter who gave feedback
     },
   },
   {
-    timestamps: true, // createdAt & updatedAt
+    timestamps: true,
   }
 );
+
+/* =====================================================
+   ⭐ SAFE JSON TRANSFORM (prevents frontend issues)
+===================================================== */
+bookingSchema.set("toJSON", {
+  transform: function (doc, ret) {
+    // ensure feedback object always exists
+    if (!ret.feedback) {
+      ret.feedback = {
+        rating: null,
+        comment: "",
+        givenAt: null,
+      };
+    }
+    return ret;
+  },
+});
 
 export default mongoose.model("Booking", bookingSchema);

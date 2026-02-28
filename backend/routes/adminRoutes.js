@@ -6,6 +6,7 @@ import {
   getAdminStats,
   getAllUsers,
   deleteUserByAdmin,
+  getAllFeedbackForAdmin,   // ✅ ADD THIS
 } from "../controllers/adminController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -24,5 +25,9 @@ router.get("/stats", authMiddleware, getAdminStats);
 /* ================= ADMIN USERS ================= */
 router.get("/users", authMiddleware, getAllUsers);
 router.delete("/users/:id", authMiddleware, deleteUserByAdmin);
+
+/* ================= ADMIN FEEDBACK ================= */
+// ✅ Get all user feedback (rating + comment)
+router.get("/feedback", authMiddleware, getAllFeedbackForAdmin);
 
 export default router;

@@ -9,7 +9,6 @@ export const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 🔥 VALIDATION
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -98,7 +97,6 @@ export const updateAdminProfile = async (req, res) => {
     if (name) admin.name = name;
     if (email) admin.email = email;
 
-    // 🔐 Update password only if provided
     if (password && password.trim() !== "") {
       const salt = await bcrypt.genSalt(10);
       admin.password = await bcrypt.hash(password, salt);
@@ -147,10 +145,9 @@ export const getAdminStats = async (req, res) => {
   }
 };
 
-/* ================= GET ALL USERS (ADMIN + USER) ================= */
+/* ================= GET ALL USERS ================= */
 export const getAllUsers = async (req, res) => {
   try {
-    // 🔥 SHOW BOTH ADMIN & USERS
     const users = await User.find().select("-password");
 
     res.status(200).json({
@@ -178,7 +175,6 @@ export const deleteUserByAdmin = async (req, res) => {
       });
     }
 
-    // ❌ ADMIN PROTECTION
     if (user.role === "admin") {
       return res.status(403).json({
         success: false,
@@ -197,6 +193,29 @@ export const deleteUserByAdmin = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Delete failed",
+    });
+  }
+};
+
+/* =====================================================
+   ✅ ADMIN: GET ALL FEEDBACK
+   GET /api/admin/feedback
+===================================================== */
+export const getAllFeedbackForAdmin = async (req, res) => {
+  try {
+    const feedbacks = await Booking.find({
+      feedbackSubmitted: true,
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      feedbacks,
+    });
+  } catch (err) {
+    console.error("❌ Fetch feedback error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch feedback",
     });
   }
 };

@@ -19,6 +19,14 @@ export default function Payment() {
 
   const [status, setStatus] = useState("idle"); // idle | processing | success
 
+  // ✅ SAFE ADDITION — get logged-in user
+let user = null;
+try {
+  user = JSON.parse(localStorage.getItem("user") || "null");
+} catch (err) {
+  console.warn("⚠️ Invalid user in localStorage");
+  user = null;
+}
   const amount =
     typeof totalAmount === "string"
       ? Number(totalAmount.replace("₹", "").trim())
@@ -49,14 +57,28 @@ export default function Payment() {
       }
 
       setStatus("processing");
+
+      // ✅ load SDK
       await loadRazorpay();
 
-      const { data: order } = await axios.post(
+      if (!window.Razorpay) {
+        throw new Error("Razorpay SDK not loaded");
+      }
+
+      // ✅ CREATE ORDER
+      const { data } = await axios.post(
         "http://localhost:5000/api/payment/create-order",
         { amount }
       );
 
-      if (!order?.id) throw new Error("Order creation failed");
+      console.log("🧾 Order response:", data);
+
+      const order = data;
+
+      if (!order?.id) {
+        console.error("❌ Order object missing:", data);
+        throw new Error("Order creation failed");
+      }
 
       const options = {
         key: "rzp_test_SGJDv8CpSvpMfO",
@@ -68,6 +90,8 @@ export default function Payment() {
 
         handler: async (response) => {
           try {
+            console.log("💳 Razorpay success response:", response);
+
             const verifyRes = await axios.post(
               "http://localhost:5000/api/payment/verify-payment",
               {
@@ -75,8 +99,12 @@ export default function Payment() {
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
 
+                // ✅ ONLY FIX — real logged-in user
                 bookingData: {
-                  userId: "TEST_USER_ID",
+                  userId: user?._id || "TEST_USER_ID",
+                  userName: user?.name || "Test User",
+                  userEmail: user?.email || "test@example.com",
+
                   parkingId,
                   parkingName: name,
                   location,
@@ -88,30 +116,48 @@ export default function Payment() {
               }
             );
 
+            console.log("✅ Verify response:", verifyRes.data);
+
             if (verifyRes.data.success) {
               setStatus("success");
             } else {
               throw new Error("Verification failed");
             }
           } catch (err) {
+            console.error(
+              "🚨 VERIFY ERROR:",
+              err.response?.data || err.message
+            );
             alert("Payment verification failed");
             setStatus("idle");
           }
         },
 
         modal: { ondismiss: () => setStatus("idle") },
+
+        // ✅ professional prefill (no UI change)
         prefill: {
-          name: "Test User",
-          email: "test@example.com",
+          name: user?.name || "Test User",
+          email: user?.email || "test@example.com",
           contact: "9999999999",
         },
+
         theme: { color: "#22c55e" },
       };
 
       const rzp = new window.Razorpay(options);
-      rzp.on("payment.failed", () => setStatus("idle"));
+
+      rzp.on("payment.failed", (err) => {
+        console.error("❌ Razorpay payment failed:", err);
+        setStatus("idle");
+      });
+
       rzp.open();
     } catch (err) {
+      console.error(
+        "🚨 PAYMENT FLOW ERROR:",
+        err.response?.data || err.message
+      );
       alert("Payment failed. Please try again.");
       setStatus("idle");
     }
@@ -195,7 +241,7 @@ export default function Payment() {
         </div>
       )}
 
-      {/* ================= STYLES ================= */}
+      {/* ================= STYLES (UNCHANGED) ================= */}
       <style>{`
         .pay-page {
           min-height:100vh;

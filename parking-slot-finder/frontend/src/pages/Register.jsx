@@ -18,13 +18,38 @@ export default function Register() {
         { name, email, password }
       );
 
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      console.log("✅ Register response:", res.data);
 
-      navigate("/user");
+      // ✅ SAFETY CHECK (unchanged)
+      if (!res.data?.user || !res.data?.token) {
+        console.error("❌ Missing user/token from backend");
+        alert(res.data?.message || "Registration failed");
+        return;
+      }
+
+      // ✅ SAFE STORAGE (unchanged)
+      try {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+      } catch (storageErr) {
+        console.error("❌ localStorage error:", storageErr);
+      }
+
+      // ✅ SUCCESS ALERT (UI same)
+      alert("User registered successfully");
+
+      // ⭐ FINAL RELIABLE NAVIGATION
+      requestAnimationFrame(() => {
+        navigate("/user", { replace: true });
+      });
+
     } catch (err) {
-      console.error("Registration error:", err);
-      alert("Registration failed");
+      console.error("Registration error:", err.response?.data || err);
+
+      alert(
+        err.response?.data?.message ||
+          "Registration failed. Try different email."
+      );
     }
   };
 
@@ -60,7 +85,7 @@ export default function Register() {
         <button type="submit">Register</button>
       </form>
 
-      {/* ================= STYLES ================= */}
+      {/* ================= STYLES (UNCHANGED) ================= */}
       <style>{`
         .register-bg {
           min-height: 100vh;

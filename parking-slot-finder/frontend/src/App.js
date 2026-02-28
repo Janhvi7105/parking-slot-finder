@@ -21,21 +21,40 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ManageParking from "./pages/ManageParking";
 import EditParking from "./pages/EditParking";
 import AdminProfile from "./pages/AdminProfile";
-import AdminReservations from "./pages/AdminReservations"; // ✅ FIXED
+import AdminReservations from "./pages/AdminReservations";
 import Users from "./pages/Users";
 
 /* ================= CONTEXT ================= */
 import { AdminStatsProvider } from "./context/AdminStatsContext";
 
 /* ================= ROUTE GUARDS ================= */
+
+// ✅ USER GUARD (unchanged logic)
 const UserProtected = ({ children }) => {
   const token = localStorage.getItem("token");
   return token ? children : <Navigate to="/user-login" />;
 };
 
+// ✅ ADMIN GUARD — BULLETPROOF FIX
 const AdminProtected = ({ children }) => {
-  const user = JSON.parse(localStorage.getItem("user"));
-  return user?.role === "admin" ? children : <Navigate to="/admin-login" />;
+  let user = null;
+
+  try {
+    const rawUser = localStorage.getItem("user");
+
+    if (rawUser && rawUser !== "undefined" && rawUser !== "null") {
+      user = JSON.parse(rawUser);
+    } else {
+      user = null;
+    }
+  } catch (err) {
+    console.warn("⚠️ Invalid admin user in localStorage");
+    user = null;
+  }
+
+  return user?.role === "admin"
+    ? children
+    : <Navigate to="/admin-login" />;
 };
 
 function App() {
@@ -83,7 +102,7 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="manage-parking" element={<ManageParking />} />
           <Route path="edit-parking/:id" element={<EditParking />} />
-          <Route path="reservations" element={<AdminReservations />} /> {/* ✅ */}
+          <Route path="reservations" element={<AdminReservations />} />
           <Route path="users" element={<Users />} />
           <Route path="profile" element={<AdminProfile />} />
         </Route>

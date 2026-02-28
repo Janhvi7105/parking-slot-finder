@@ -10,27 +10,40 @@ const router = express.Router();
 ========================================================= */
 router.post("/create-order", async (req, res) => {
   try {
+    console.log("📥 Create order body:", req.body);
+
     const { amount } = req.body;
 
+    // ✅ guard (same logic, safer)
     if (!amount || isNaN(amount) || amount <= 0) {
+      console.log("❌ Invalid amount:", amount);
       return res.status(400).json({
         success: false,
         message: "Invalid amount",
       });
     }
 
-    const order = await razorpay.orders.create({
+    const options = {
       amount: Math.round(amount * 100), // ₹ → paise
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
-    });
+    };
 
+    console.log("🧾 Razorpay options:", options);
+
+    const order = await razorpay.orders.create(options);
+
+    console.log("✅ Razorpay order created:", order?.id);
+
+    // ⭐ IMPORTANT: keep SAME response format
     res.status(200).json(order);
   } catch (error) {
     console.error("❌ Create order error:", error);
+
     res.status(500).json({
       success: false,
       message: "Order creation failed",
+      error: error?.error?.description || error.message,
     });
   }
 });
@@ -40,6 +53,8 @@ router.post("/create-order", async (req, res) => {
 ========================================================= */
 router.post("/verify-payment", async (req, res) => {
   try {
+    console.log("📥 Verify payment body:", req.body);
+
     const {
       razorpay_order_id,
       razorpay_payment_id,
@@ -47,12 +62,15 @@ router.post("/verify-payment", async (req, res) => {
       bookingData,
     } = req.body;
 
+    // ✅ guard (same logic)
     if (
       !razorpay_order_id ||
       !razorpay_payment_id ||
       !razorpay_signature ||
       !bookingData
     ) {
+      console.log("❌ Missing payment details");
+
       return res.status(400).json({
         success: false,
         message: "Missing payment or booking details",
@@ -67,7 +85,12 @@ router.post("/verify-payment", async (req, res) => {
       .update(body)
       .digest("hex");
 
+    console.log("🔐 Expected:", expectedSignature);
+    console.log("🔐 Received:", razorpay_signature);
+
     if (expectedSignature !== razorpay_signature) {
+      console.log("❌ Signature mismatch");
+
       return res.status(400).json({
         success: false,
         message: "Invalid payment signature",
@@ -82,6 +105,8 @@ router.post("/verify-payment", async (req, res) => {
     });
 
     if (existingBooking) {
+      console.log("⚠️ Duplicate booking prevented");
+
       return res.status(200).json({
         success: true,
         booking: existingBooking,
@@ -90,8 +115,8 @@ router.post("/verify-payment", async (req, res) => {
 
     /* ================= SAVE BOOKING ================= */
     const booking = await Booking.create({
-      userId: bookingData.userId,          // "TEST_USER_ID" (JWT later)
-      userName: "Test User",               // ✅ REQUIRED FIELD (TEMP)
+      userId: bookingData.userId,
+      userName: "Test User", // (unchanged as you requested)
 
       parkingId: bookingData.parkingId,
       parkingName: bookingData.parkingName,
@@ -117,6 +142,7 @@ router.post("/verify-payment", async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Verify payment error:", error);
+
     res.status(500).json({
       success: false,
       message: "Payment verification failed",

@@ -24,7 +24,19 @@ export const register = async (req, res) => {
       role: "user",
     });
 
-    res.status(201).json({ message: "User registered successfully" });
+    // ⭐⭐⭐ CRITICAL FIX — generate token like login ⭐⭐⭐
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    // ⭐⭐⭐ CRITICAL FIX — send user + token ⭐⭐⭐
+    res.status(201).json({
+      message: "User registered successfully",
+      token,
+      user,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Registration failed" });
