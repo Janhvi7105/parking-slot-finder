@@ -9,6 +9,9 @@ import { sendReceiptMail } from "../utils/sendReceiptMail.js";
 /* ⭐ NEW — fallback user lookup */
 import User from "../models/User.js";
 
+/* ⭐ IMPORTANT */
+import mongoose from "mongoose";
+
 /* =====================================================
 USER: GET MY BOOKINGS
 ===================================================== */
@@ -49,7 +52,6 @@ export const getAllBookingsForAdmin = async (req, res) => {
       createdAt: -1,
     });
 
-    // ✅ ensures admin receives feedback data
     res.status(200).json({
       success: true,
       bookings,
@@ -93,29 +95,44 @@ export const confirmBookingByAdmin = async (req, res) => {
 
     /* ================= RECEIPT + EMAIL FLOW ================= */
     try {
-      const updatedBooking = booking;
+      const updatedBooking = {
+        ...booking.toObject(),
+        vehicleType: booking.vehicleType || "2-wheeler",
+      };
+
+      console.log("🚗 Vehicle for receipt:", updatedBooking.vehicleType);
 
       // ✅ generate QR
       const qrImage = await generateQR(updatedBooking);
 
+      // ✅ generate PDF
       const pdfBuffer = await generateReceiptPDF(
         updatedBooking,
         qrImage
       );
 
       /* =====================================================
-         ⭐⭐⭐ ROBUST EMAIL RESOLUTION ⭐⭐⭐
+         ⭐⭐⭐ BULLETPROOF EMAIL RESOLUTION ⭐⭐⭐
       ===================================================== */
 
-      let emailToSend = updatedBooking.userEmail;
+      let emailToSend = updatedBooking.userEmail?.trim();
 
-      // ⭐ FALLBACK — fetch from User collection
-      if (!emailToSend || emailToSend === "") {
+      console.log("🔎 booking.userEmail:", updatedBooking.userEmail);
+      console.log("🔎 booking.userId:", updatedBooking.userId);
+
+      const normalizedUserId = mongoose.Types.ObjectId.isValid(
+        updatedBooking.userId
+      )
+        ? new mongoose.Types.ObjectId(updatedBooking.userId)
+        : updatedBooking.userId;
+
+      if (!emailToSend) {
         try {
-          const user = await User.findById(updatedBooking.userId);
+          const user = await User.findById(normalizedUserId);
+          console.log("🔎 user from DB:", user?.email);
 
           if (user?.email) {
-            emailToSend = user.email;
+            emailToSend = user.email.trim().toLowerCase();
             console.log(
               "📩 Email fetched from User model:",
               emailToSend
@@ -126,12 +143,22 @@ export const confirmBookingByAdmin = async (req, res) => {
         }
       }
 
-      // ⭐ FINAL SEND
-      if (emailToSend) {
+      /* ================= FINAL SAFE GUARD (UPDATED) ================= */
+      console.log("📨 FINAL EMAIL TO SEND:", emailToSend);
+
+      if (
+        emailToSend &&
+        emailToSend.includes("@") &&
+        pdfBuffer &&
+        pdfBuffer.length > 1000
+      ) {
+        console.log("📎 Final PDF buffer length:", pdfBuffer.length);
         await sendReceiptMail(emailToSend, pdfBuffer);
         console.log("📧 Receipt email sent");
       } else {
-        console.log("❌ No email available — mail skipped");
+        console.log(
+          "⚠️ Skipping email — PDF not ready or email invalid"
+        );
       }
 
       console.log("✅ Confirmation flow completed");
@@ -220,7 +247,6 @@ export const submitFeedback = async (req, res) => {
 
     console.log("📝 Feedback request:", req.body);
 
-    // ✅ validation
     if (!bookingId || !rating) {
       return res.status(400).json({
         success: false,
@@ -237,7 +263,6 @@ export const submitFeedback = async (req, res) => {
       });
     }
 
-    // ✅ only confirmed bookings can submit feedback
     if (booking.status !== "Confirmed") {
       return res.status(400).json({
         success: false,
@@ -245,7 +270,6 @@ export const submitFeedback = async (req, res) => {
       });
     }
 
-    // ✅ prevent duplicate feedback
     if (booking.feedbackSubmitted) {
       return res.status(400).json({
         success: false,
@@ -253,7 +277,6 @@ export const submitFeedback = async (req, res) => {
       });
     }
 
-    /* ================= SAVE FEEDBACK ================= */
     booking.feedback = {
       rating,
       comment: comment || "",

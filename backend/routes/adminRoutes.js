@@ -6,7 +6,9 @@ import {
   getAdminStats,
   getAllUsers,
   deleteUserByAdmin,
-  getAllFeedbackForAdmin,   // ✅ ADD THIS
+  getAllFeedbackForAdmin,
+  confirmBooking,        // ⭐ NEW (safe)
+  cancelBooking,         // ⭐ NEW (safe)
 } from "../controllers/adminController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -29,5 +31,15 @@ router.delete("/users/:id", authMiddleware, deleteUserByAdmin);
 /* ================= ADMIN FEEDBACK ================= */
 // ✅ Get all user feedback (rating + comment)
 router.get("/feedback", authMiddleware, getAllFeedbackForAdmin);
+
+/* =====================================================
+   ⭐ ADMIN BOOKING ACTIONS (NEW — SAFE)
+===================================================== */
+
+// ✅ Confirm booking
+router.put("/confirm/:id", authMiddleware, confirmBooking);
+
+// ✅ Cancel booking + refund
+router.put("/cancel/:id", authMiddleware, cancelBooking);
 
 export default router;

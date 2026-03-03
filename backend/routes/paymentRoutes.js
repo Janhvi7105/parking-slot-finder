@@ -14,7 +14,7 @@ router.post("/create-order", async (req, res) => {
 
     const { amount } = req.body;
 
-    // ✅ guard (same logic, safer)
+    // ✅ guard (same logic)
     if (!amount || isNaN(amount) || amount <= 0) {
       console.log("❌ Invalid amount:", amount);
       return res.status(400).json({
@@ -35,7 +35,6 @@ router.post("/create-order", async (req, res) => {
 
     console.log("✅ Razorpay order created:", order?.id);
 
-    // ⭐ IMPORTANT: keep SAME response format
     res.status(200).json(order);
   } catch (error) {
     console.error("❌ Create order error:", error);
@@ -78,6 +77,7 @@ router.post("/verify-payment", async (req, res) => {
     }
 
     /* ================= SIGNATURE VERIFICATION ================= */
+    // ✅✅✅ FIXED SPELLING HERE
     const body = `${razorpay_order_id}|${razorpay_payment_id}`;
 
     const expectedSignature = crypto
@@ -113,18 +113,36 @@ router.post("/verify-payment", async (req, res) => {
       });
     }
 
+    /* ================= ⭐ EMAIL CLEAN ================= */
+    const cleanedEmail =
+      bookingData?.userEmail &&
+      String(bookingData.userEmail).trim() !== ""
+        ? String(bookingData.userEmail).trim().toLowerCase()
+        : "";
+
+    console.log("🚨 EMAIL BEFORE SAVE:", cleanedEmail);
+
     /* ================= SAVE BOOKING ================= */
     const booking = await Booking.create({
       userId: bookingData.userId,
-      userName: "Test User", // (unchanged as you requested)
+      userName: "Test User", // unchanged
+
+      // ⭐ CRITICAL — email now saved properly
+      userEmail: cleanedEmail,
 
       parkingId: bookingData.parkingId,
       parkingName: bookingData.parkingName,
       location: bookingData.location,
 
+      vehicleType: bookingData.vehicleType || "2-wheeler",
+
       bookingDate: new Date().toDateString(),
       fromTime: bookingData.fromTime,
       toTime: bookingData.toTime,
+
+      addons: Array.isArray(bookingData.addons)
+        ? bookingData.addons
+        : [],
 
       amount: bookingData.amount,
 
@@ -134,6 +152,7 @@ router.post("/verify-payment", async (req, res) => {
     });
 
     console.log("📦 Booking saved:", booking._id);
+    console.log("📧 Saved booking email:", booking.userEmail);
 
     res.status(200).json({
       success: true,

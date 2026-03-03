@@ -11,7 +11,17 @@ export default function BookParking() {
   const [fromTime, setFromTime] = useState("");
   const [toTime, setToTime] = useState("");
 
+  // ⭐ NEW — vehicle state (default 2-wheeler)
+  const [vehicleType, setVehicleType] = useState("2-wheeler");
+
   const TOW_PRICE = 300;
+
+  // ⭐ NEW — multiplier map
+  const vehicleMultiplier = {
+    "2-wheeler": 1,
+    "4-wheeler": 1.5,
+    bus: 3,
+  };
 
   /* ================= FETCH PARKING ================= */
   useEffect(() => {
@@ -23,7 +33,21 @@ export default function BookParking() {
 
   if (!parking) return <p style={{ padding: 30 }}>Loading...</p>;
 
-  const totalAmount = parking.price + (addonTow ? TOW_PRICE : 0);
+  /* ================= PRICE CALCULATION ================= */
+  const hours =
+    fromTime && toTime
+      ? Math.max(
+          1,
+          (new Date(toTime) - new Date(fromTime)) / (1000 * 60 * 60)
+        )
+      : 1;
+
+  const vehiclePrice =
+    parking.price * (vehicleMultiplier[vehicleType] || 1);
+
+  const totalAmount =
+    Math.round(vehiclePrice * hours) +
+    (addonTow ? TOW_PRICE : 0);
 
   /* ================= CONFIRM BOOKING ================= */
   const handleConfirm = () => {
@@ -38,6 +62,7 @@ export default function BookParking() {
         name: parking.name,
         location: parking.location,
         basePrice: parking.price,
+        vehicleType, // ⭐ ADDED
         addons: addonTow
           ? [{ name: "Tow", price: TOW_PRICE }]
           : [],
@@ -68,6 +93,26 @@ export default function BookParking() {
             <span>Base Price</span>
             <b className="price">₹{parking.price}</b>
           </div>
+        </div>
+
+        {/* ⭐ VEHICLE SELECTOR (NEW — UI MATCHED) */}
+        <div className="bp-section">
+          <h4>Vehicle Type</h4>
+          <select
+            value={vehicleType}
+            onChange={(e) => setVehicleType(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "12px",
+              borderRadius: "12px",
+              border: "1px solid #e5e7eb",
+              fontSize: "14px",
+            }}
+          >
+            <option value="2-wheeler">2 Wheeler</option>
+            <option value="4-wheeler">4 Wheeler</option>
+            <option value="bus">Bus</option>
+          </select>
         </div>
 
         {/* ADDONS */}

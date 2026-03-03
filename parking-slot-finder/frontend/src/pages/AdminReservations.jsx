@@ -33,12 +33,11 @@ export default function AdminReservations() {
 
   /* ================= CONFIRM BOOKING ================= */
   const confirmBooking = async (id, status) => {
-    // ✅ EXTRA SAFETY (prevents Axios 400)
     if (status !== "Reserved") return;
 
     try {
       await axios.put(
-        `http://localhost:5000/api/bookings/admin/confirm/${id}`,
+        `http://localhost:5000/api/admin/confirm/${id}`, // ⭐ FIXED
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -56,12 +55,11 @@ export default function AdminReservations() {
 
   /* ================= CANCEL BOOKING ================= */
   const cancelBooking = async (id, status) => {
-    // ✅ EXTRA SAFETY
     if (status !== "Reserved") return;
 
     try {
       await axios.put(
-        `http://localhost:5000/api/bookings/admin/cancel/${id}`,
+        `http://localhost:5000/api/admin/cancel/${id}`, // ⭐ FIXED
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

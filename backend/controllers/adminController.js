@@ -3,6 +3,33 @@ import Booking from "../models/Booking.js";
 import Parking from "../models/Parking.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import Razorpay from "razorpay";
+import { sendReceiptMail } from "../utils/sendReceiptMail.js";
+
+/* ⭐ NEW — REQUIRED FOR RECEIPT */
+import { generateQR } from "../utils/generateQR.js";
+import { generateReceiptPDF } from "../utils/generateReceipt.js";
+
+/* =====================================================
+   ⭐ SAFE LAZY RAZORPAY (PREVENTS STARTUP CRASH)
+===================================================== */
+let razorpayInstance = null;
+
+const getRazorpay = () => {
+  if (!razorpayInstance) {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      console.error("❌ Razorpay keys missing in environment");
+      throw new Error("Razorpay keys missing in environment");
+    }
+
+    razorpayInstance = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+  }
+
+  return razorpayInstance;
+};
 
 /* ================= ADMIN LOGIN ================= */
 export const adminLogin = async (req, res) => {
@@ -198,8 +225,105 @@ export const deleteUserByAdmin = async (req, res) => {
 };
 
 /* =====================================================
+   ⭐ ADMIN CONFIRM BOOKING (FINAL FIX)
+===================================================== */
+export const confirmBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    // ✅ ORIGINAL LOGIC
+    booking.status = "Confirmed";
+    booking.confirmedAt = new Date();
+    await booking.save();
+
+    // ✅ RECEIPT FLOW (SAFE)
+    try {
+      if (booking.userEmail && booking.userEmail.includes("@")) {
+        console.log("📨 Preparing receipt for:", booking.userEmail);
+
+        const qrImage = await generateQR(booking);
+        const pdfBuffer = await generateReceiptPDF(booking, qrImage);
+
+        console.log("📎 Final PDF buffer length:", pdfBuffer?.length);
+
+        if (pdfBuffer && pdfBuffer.length > 1000) {
+          await sendReceiptMail(booking.userEmail, pdfBuffer);
+          console.log("📧 Receipt email sent");
+        } else {
+          console.log("⚠️ PDF invalid — email skipped");
+        }
+      }
+    } catch (e) {
+      console.error("❌ Receipt flow failed:", e.message);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Booking confirmed",
+    });
+  } catch (err) {
+    console.error("❌ Confirm booking error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Confirm failed",
+    });
+  }
+};
+
+/* =====================================================
+   ⭐ ADMIN CANCEL + REFUND
+===================================================== */
+export const cancelBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    if (!booking.paymentId) {
+      return res.status(400).json({
+        success: false,
+        message: "No payment found for refund",
+      });
+    }
+
+    const razorpay = getRazorpay();
+
+    const refund = await razorpay.payments.refund(booking.paymentId, {
+      amount: booking.amount * 100,
+    });
+
+    booking.status = "Cancelled";
+    booking.refundId = refund.id;
+
+    await booking.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Booking cancelled & refunded",
+    });
+  } catch (err) {
+    console.error("❌ Cancel booking error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Refund failed",
+    });
+  }
+};
+
+/* =====================================================
    ✅ ADMIN: GET ALL FEEDBACK
-   GET /api/admin/feedback
 ===================================================== */
 export const getAllFeedbackForAdmin = async (req, res) => {
   try {

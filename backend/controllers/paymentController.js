@@ -1,9 +1,17 @@
+import crypto from "crypto";
+import Booking from "../models/Booking.js";
+import razorpay from "../config/razorpay.js";
+
+/* ⭐ RECEIPT UTILITIES */
+import { generateQR } from "../utils/generateQR.js";
+import { generateReceiptPDF } from "../utils/generateReceipt.js";
+import { sendReceiptMail } from "../utils/sendReceiptMail.js";
+
 /* =====================================================
    VERIFY PAYMENT + SAVE BOOKING
 ===================================================== */
 export const verifyPayment = async (req, res) => {
   try {
-    // ⭐ SAFER destructuring (prevents undefined issues)
     const {
       razorpay_order_id,
       razorpay_payment_id,
@@ -11,7 +19,6 @@ export const verifyPayment = async (req, res) => {
       bookingData = {},
     } = req.body;
 
-    /* 🔍 DEBUG LOGS */
     console.log("🔥 FULL req.body:", req.body);
     console.log("📩 verifyPayment bookingData:", bookingData);
 
@@ -27,8 +34,6 @@ export const verifyPayment = async (req, res) => {
     console.log("🔐 Received signature:", razorpay_signature);
 
     if (expectedSignature !== razorpay_signature) {
-      console.log("❌ Signature mismatch");
-
       return res.status(400).json({
         success: false,
         message: "Payment verification failed",
@@ -53,43 +58,78 @@ export const verifyPayment = async (req, res) => {
     }
 
     /* =====================================================
-       ⭐ HARD GUARANTEE EMAIL (ULTRA SAFE)
+       ⭐ EMAIL CLEANING
     ===================================================== */
     const cleanedEmail =
       bookingData?.userEmail &&
       String(bookingData.userEmail).trim() !== ""
         ? String(bookingData.userEmail).trim().toLowerCase()
-        : "test@example.com";
+        : "";
 
     console.log("🧪 FINAL EMAIL TO SAVE:", cleanedEmail);
 
-    // ⭐ remove email from spread to avoid overwrite
+    const safeVehicle = bookingData?.vehicleType || "2-wheeler";
+    const safeAmount = Number(bookingData?.amount || 0);
+    const safeAddons = Array.isArray(bookingData?.addons)
+      ? bookingData.addons
+      : [];
+
+    /* =====================================================
+       ✅ BOOKING CREATION
+    ===================================================== */
     const bookingPayload = { ...(bookingData || {}) };
     delete bookingPayload.userEmail;
 
-    /* =====================================================
-       ✅ PAYMENT VERIFIED — SAVE BOOKING (BULLETPROOF)
-    ===================================================== */
-
-    // Step 1 — create mongoose document
     const newBooking = new Booking({
       ...bookingPayload,
+      vehicleType: safeVehicle,
+      addons: safeAddons,
+      amount: safeAmount,
       userName: bookingData?.userName || "Test User",
+      userEmail: cleanedEmail,
       paymentId: razorpay_payment_id,
       orderId: razorpay_order_id,
-      status: "Reserved",
+      status: "Reserved", // ✅ keep reserved (admin will confirm)
       receiptUrl: "",
       feedbackSubmitted: false,
     });
 
-    // ⭐⭐⭐ CRITICAL — force email AFTER model creation ⭐⭐⭐
-    newBooking.userEmail = cleanedEmail;
-
-    // Step 3 — save
     await newBooking.save();
 
     console.log("✅ Booking saved after payment:", newBooking._id);
-    console.log("📧 Saved booking email:", newBooking.userEmail);
+
+    /* =====================================================
+       ⭐ RECEIPT GENERATION (SAFE + NON-BLOCKING)
+    ===================================================== */
+    try {
+      // ⚠️ Only send immediately if you WANT instant receipt
+      // Admin confirm will send final receipt again
+
+      if (cleanedEmail && cleanedEmail.includes("@")) {
+        console.log("📨 Preparing receipt email...");
+
+        // 🔥 IMPORTANT — convert mongoose → plain object
+        const plainBooking = newBooking.toObject();
+
+        const qrImage = await generateQR(plainBooking);
+        const pdfBuffer = await generateReceiptPDF(
+          plainBooking,
+          qrImage
+        );
+
+        console.log("📎 Final PDF buffer length:", pdfBuffer?.length);
+
+        if (pdfBuffer && pdfBuffer.length > 1000) {
+          await sendReceiptMail(cleanedEmail, pdfBuffer);
+          console.log("📧 Receipt email sent from verifyPayment");
+        } else {
+          console.log("⚠️ PDF invalid — email skipped");
+        }
+      }
+    } catch (mailErr) {
+      // ✅ NEVER break booking flow
+      console.error("❌ Receipt generation failed:", mailErr.message);
+    }
 
     return res.status(200).json({
       success: true,

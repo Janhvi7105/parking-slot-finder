@@ -11,6 +11,7 @@ export default function Payment() {
     name,
     location,
     basePrice,
+    vehicleType, // ⭐ ADDED (safe)
     addons = [],
     totalAmount,
     fromTime,
@@ -20,13 +21,14 @@ export default function Payment() {
   const [status, setStatus] = useState("idle"); // idle | processing | success
 
   // ✅ SAFE ADDITION — get logged-in user
-let user = null;
-try {
-  user = JSON.parse(localStorage.getItem("user") || "null");
-} catch (err) {
-  console.warn("⚠️ Invalid user in localStorage");
-  user = null;
-}
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem("user") || "null");
+  } catch (err) {
+    console.warn("⚠️ Invalid user in localStorage");
+    user = null;
+  }
+
   const amount =
     typeof totalAmount === "string"
       ? Number(totalAmount.replace("₹", "").trim())
@@ -99,7 +101,7 @@ try {
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
 
-                // ✅ ONLY FIX — real logged-in user
+                // ✅ booking data
                 bookingData: {
                   userId: user?._id || "TEST_USER_ID",
                   userName: user?.name || "Test User",
@@ -108,6 +110,8 @@ try {
                   parkingId,
                   parkingName: name,
                   location,
+                  vehicleType, // ⭐ ADDED (critical)
+
                   fromTime,
                   toTime,
                   addons,

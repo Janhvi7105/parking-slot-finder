@@ -20,8 +20,8 @@ const bookingSchema = new mongoose.Schema(
     userEmail: {
       type: String,
       trim: true,
-      lowercase: true, // ✅ ensures consistent email
-      default: "",     // ✅ keeps your existing behavior
+      lowercase: true,
+      default: "",
       index: true,
     },
 
@@ -42,6 +42,15 @@ const bookingSchema = new mongoose.Schema(
     location: {
       type: String,
       trim: true,
+    },
+
+    /* ================= ⭐ VEHICLE TYPE ================= */
+    vehicleType: {
+      type: String,
+      enum: ["2-wheeler", "4-wheeler", "bus"],
+      required: true,
+      default: "2-wheeler", // ✅ DEFAULT UPDATED (your requirement)
+      index: true,
     },
 
     /* ================= TIME DETAILS ================= */
@@ -78,7 +87,7 @@ const bookingSchema = new mongoose.Schema(
     paymentId: {
       type: String,
       trim: true,
-      index: true, // ✅ helps admin search payments
+      index: true,
     },
 
     orderId: {
@@ -89,16 +98,25 @@ const bookingSchema = new mongoose.Schema(
       sparse: true,
     },
 
+    // ⭐ NEW — supports refund tracking (no logic break)
+    refundId: {
+      type: String,
+      trim: true,
+      index: true,
+    },
+
     /* ================= BOOKING STATUS ================= */
     status: {
       type: String,
       enum: ["Reserved", "Confirmed", "Cancelled"],
       default: "Reserved",
-      index: true, // ✅ faster filtering in admin panel
+      index: true,
     },
 
+    // ⭐ safer audit field
     confirmedAt: {
       type: Date,
+      default: null,
     },
 
     /* ================= RECEIPT ================= */
@@ -113,7 +131,7 @@ const bookingSchema = new mongoose.Schema(
         type: Number,
         min: 1,
         max: 5,
-        default: null, // ✅ prevents undefined issues
+        default: null,
       },
       comment: {
         type: String,
@@ -128,7 +146,7 @@ const bookingSchema = new mongoose.Schema(
     feedbackSubmitted: {
       type: Boolean,
       default: false,
-      index: true, // ✅ admin can filter who gave feedback
+      index: true,
     },
   },
   {
@@ -137,11 +155,15 @@ const bookingSchema = new mongoose.Schema(
 );
 
 /* =====================================================
+   ⭐ PERFORMANCE INDEX (SAFE — NO LOGIC CHANGE)
+===================================================== */
+bookingSchema.index({ parkingId: 1, fromTime: 1, toTime: 1 });
+
+/* =====================================================
    ⭐ SAFE JSON TRANSFORM (prevents frontend issues)
 ===================================================== */
 bookingSchema.set("toJSON", {
   transform: function (doc, ret) {
-    // ensure feedback object always exists
     if (!ret.feedback) {
       ret.feedback = {
         rating: null,
