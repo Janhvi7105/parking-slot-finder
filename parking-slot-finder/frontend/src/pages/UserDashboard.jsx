@@ -54,203 +54,515 @@ export default function UserDashboard() {
 
   return (
     <div className="ud-container">
-      {/* TITLE */}
-      <h2 className="ud-title">User Dashboard</h2>
-
-      {/* CARD */}
-      <div className="ud-card">
-        <div className="ud-card-header">
-          <h3>Recent Bookings</h3>
-          <span>Last 4</span>
+      {/* Hero / Welcome Section */}
+      <div className="ud-welcome">
+        <div className="ud-welcome-text">
+          <h1>Welcome back, {user?.name || "Guest"} 👋</h1>
+          <p>Track and manage your parking sessions in one place.</p>
         </div>
-
-        {/* TABLE */}
-        <table className="ud-table">
-          <thead>
-            <tr>
-              <th>Parking Name</th>
-              <th>Booking Date</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {bookings.length === 0 ? (
-              <tr>
-                <td colSpan="3" className="ud-empty">
-                  No recent bookings
-                </td>
-              </tr>
-            ) : (
-              bookings.map((b) => (
-                <tr key={b._id}>
-                  <td className="ud-parking">{b.parkingName}</td>
-                  <td className="ud-date">
-                    {new Date(b.createdAt).toLocaleString()}
-                  </td>
-                  <td>
-                    <span
-                      className={`ud-status ${
-                        b.status === "Confirmed"
-                          ? "confirmed"
-                          : b.status === "Cancelled"
-                          ? "cancelled"
-                          : "reserved"
-                      }`}
-                    >
-                      {b.status}
-                    </span>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-
-        {/* ACTION */}
-        <button
-          className="ud-btn"
-          onClick={() => navigate("/user/search")}
-        >
-          🚗 Find Parking
-        </button>
+        <div className="ud-stats-badge">
+          <div className="ud-stat">
+            <span className="ud-stat-number">{bookings.length}</span>
+            <span className="ud-stat-label">Recent</span>
+          </div>
+          <div className="ud-stat">
+            <span className="ud-stat-number">
+              {bookings.filter(b => b.status === "Confirmed").length}
+            </span>
+            <span className="ud-stat-label">Active</span>
+          </div>
+        </div>
       </div>
 
-      {/* ================= STYLES ONLY (UNCHANGED) ================= */}
+      {/* Main Card */}
+      <div className="ud-card">
+        <div className="ud-card-header">
+          <div>
+            <h3>📋 Recent Bookings</h3>
+            <p>Your last 4 parking reservations</p>
+          </div>
+          <span className="ud-badge">Last 4</span>
+        </div>
+
+        {/* Table */}
+        <div className="ud-table-wrapper">
+          <table className="ud-table">
+            <thead>
+              <tr>
+                <th>Parking Location</th>
+                <th>Booking Date & Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bookings.length === 0 ? (
+                <tr>
+                  <td colSpan="3" className="ud-empty">
+                    <div className="ud-empty-state">
+                      <span className="ud-empty-icon">🅿️</span>
+                      <p>No recent bookings found</p>
+                      <span className="ud-empty-sub">Start your first parking session now</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                bookings.map((b, idx) => (
+                  <tr key={b._id} className="ud-table-row" style={{ animationDelay: `${idx * 0.05}s` }}>
+                    <td className="ud-parking">
+                      <div className="ud-parking-info">
+                        <span className="ud-parking-icon">📍</span>
+                        <span>{b.parkingName}</span>
+                      </div>
+                    </td>
+                    <td className="ud-date">
+                      <div className="ud-date-info">
+                        <span className="ud-date-icon">📅</span>
+                        <span>{new Date(b.createdAt).toLocaleString()}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        className={`ud-status ${
+                          b.status === "Confirmed"
+                            ? "confirmed"
+                            : b.status === "Cancelled"
+                            ? "cancelled"
+                            : "reserved"
+                        }`}
+                      >
+                        {b.status === "Confirmed" && "✓ Confirmed"}
+                        {b.status === "Cancelled" && "✗ Cancelled"}
+                        {b.status !== "Confirmed" && b.status !== "Cancelled" && "⏳ Reserved"}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="ud-actions">
+          <button
+            className="ud-btn ud-btn-primary"
+            onClick={() => navigate("/user/search")}
+          >
+            🚗 Find Parking Now
+          </button>
+          <button
+            className="ud-btn ud-btn-secondary"
+            onClick={() => navigate("/user/bookings")}
+          >
+            View All Bookings →
+          </button>
+        </div>
+      </div>
+
+      {/* Features Section */}
+      <div className="ud-features">
+        <div className="ud-feature">
+          <div className="ud-feature-icon">🔍</div>
+          <h4>Easy Search</h4>
+          <p>Find available parking spots near you</p>
+        </div>
+        <div className="ud-feature">
+          <div className="ud-feature-icon">💳</div>
+          <h4>Secure Payments</h4>
+          <p>Safe & encrypted payment methods</p>
+        </div>
+        <div className="ud-feature">
+          <div className="ud-feature-icon">🕐</div>
+          <h4>24/7 Access</h4>
+          <p>Book anytime, anywhere</p>
+        </div>
+      </div>
+
       <style>{`
-        .ud-container {
-          padding: 30px;
-          background: linear-gradient(180deg, #f8fafc, #ffffff);
-          min-height: 100vh;
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
         }
 
-        .ud-title {
-          font-size: 30px;
+        .ud-container {
+          max-width: 1400px;
+          margin: 0 auto;
+          padding: 40px 32px;
+          background: linear-gradient(135deg, #f5f7fa 0%, #eef2f7 100%);
+          min-height: 100vh;
+          font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Welcome Section */
+        .ud-welcome {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 40px;
+          flex-wrap: wrap;
+          gap: 20px;
+        }
+
+        .ud-welcome-text h1 {
+          font-size: 32px;
           font-weight: 800;
-          margin-bottom: 22px;
-          background: linear-gradient(90deg, #2563eb, #06b6d4);
+          background: linear-gradient(135deg, #1e293b, #2d3a4e);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
+          background-clip: text;
+          margin-bottom: 8px;
+          letter-spacing: -0.02em;
         }
 
+        .ud-welcome-text p {
+          color: #5b6e8c;
+          font-size: 16px;
+          font-weight: 500;
+        }
+
+        .ud-stats-badge {
+          display: flex;
+          gap: 16px;
+          background: rgba(255,255,255,0.7);
+          backdrop-filter: blur(10px);
+          padding: 12px 24px;
+          border-radius: 80px;
+          box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+        }
+
+        .ud-stat {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 0 16px;
+        }
+
+        .ud-stat:first-child {
+          border-right: 2px solid #e2e8f0;
+        }
+
+        .ud-stat-number {
+          font-size: 28px;
+          font-weight: 800;
+          color: #2563eb;
+          line-height: 1;
+        }
+
+        .ud-stat-label {
+          font-size: 12px;
+          font-weight: 600;
+          color: #5b6e8c;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        /* Card */
         .ud-card {
           background: #ffffff;
-          border-radius: 20px;
-          padding: 26px;
-          box-shadow: 0 25px 60px rgba(0,0,0,0.12);
-          animation: fadeIn 0.4s ease;
+          border-radius: 32px;
+          padding: 32px;
+          box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          margin-bottom: 40px;
         }
 
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(15px); }
-          to { opacity: 1; transform: translateY(0); }
+        .ud-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 30px 60px -15px rgba(0,0,0,0.2);
         }
 
         .ud-card-header {
           display: flex;
           justify-content: space-between;
-          align-items: center;
-          margin-bottom: 18px;
+          align-items: flex-end;
+          margin-bottom: 28px;
+          flex-wrap: wrap;
+          gap: 12px;
+          border-bottom: 2px solid #f1f5f9;
+          padding-bottom: 20px;
         }
 
         .ud-card-header h3 {
-          font-size: 20px;
+          font-size: 24px;
           font-weight: 700;
+          color: #0f172a;
+          margin-bottom: 6px;
         }
 
-        .ud-card-header span {
-          background: #eef2ff;
-          color: #4338ca;
-          padding: 5px 14px;
-          border-radius: 999px;
+        .ud-card-header p {
+          font-size: 14px;
+          color: #64748b;
+        }
+
+        .ud-badge {
+          background: linear-gradient(135deg, #2563eb10, #06b6d410);
+          color: #2563eb;
+          padding: 8px 20px;
+          border-radius: 40px;
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 700;
+          border: 1px solid #2563eb20;
+        }
+
+        /* Table */
+        .ud-table-wrapper {
+          overflow-x: auto;
+          border-radius: 20px;
+          margin-bottom: 28px;
         }
 
         .ud-table {
           width: 100%;
           border-collapse: separate;
-          border-spacing: 0 10px;
+          border-spacing: 0 12px;
         }
 
         .ud-table th {
           text-align: left;
           font-size: 13px;
-          color: #64748b;
-          padding-bottom: 8px;
+          font-weight: 700;
+          color: #5b6e8c;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          padding: 12px 16px;
+          background: #f8fafc;
+          border-radius: 12px;
         }
 
-        .ud-table tbody tr {
+        .ud-table-row {
           background: #ffffff;
-          border-radius: 14px;
-          transition: all 0.25s ease;
+          transition: all 0.2s ease;
+          animation: slideUp 0.4s ease forwards;
+          opacity: 0;
+          transform: translateY(10px);
         }
 
-        .ud-table tbody tr:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        @keyframes slideUp {
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .ud-table-row:hover {
+          background: #fefce8;
+          transform: scale(1.01);
+          box-shadow: 0 8px 25px rgba(0,0,0,0.05);
         }
 
         .ud-table td {
-          padding: 14px 12px;
+          padding: 18px 16px;
           font-size: 14px;
+          border-bottom: 1px solid #f1f5f9;
+          color: #1e293b;
+        }
+
+        .ud-parking-info, .ud-date-info {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .ud-parking-icon, .ud-date-icon {
+          font-size: 18px;
         }
 
         .ud-parking {
           font-weight: 600;
-          color: #0f172a;
         }
 
         .ud-date {
-          color: #475569;
           font-size: 13px;
+          color: #475569;
         }
 
+        /* Status */
         .ud-status {
-          padding: 6px 16px;
-          border-radius: 999px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 18px;
+          border-radius: 40px;
           font-size: 12px;
           font-weight: 700;
-          color: #fff;
+          letter-spacing: 0.3px;
+          backdrop-filter: blur(4px);
         }
 
         .ud-status.confirmed {
           background: linear-gradient(135deg, #22c55e, #16a34a);
-          box-shadow: 0 0 10px rgba(34,197,94,0.45);
+          color: white;
+          box-shadow: 0 4px 12px rgba(34,197,94,0.3);
         }
 
         .ud-status.reserved {
           background: linear-gradient(135deg, #f59e0b, #d97706);
-          box-shadow: 0 0 10px rgba(245,158,11,0.45);
+          color: white;
+          box-shadow: 0 4px 12px rgba(245,158,11,0.3);
         }
 
         .ud-status.cancelled {
           background: linear-gradient(135deg, #ef4444, #dc2626);
-          box-shadow: 0 0 10px rgba(239,68,68,0.45);
+          color: white;
+          box-shadow: 0 4px 12px rgba(239,68,68,0.3);
         }
 
+        /* Empty State */
         .ud-empty {
           text-align: center;
-          padding: 20px;
+          padding: 48px 20px;
+        }
+
+        .ud-empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .ud-empty-icon {
+          font-size: 64px;
+          opacity: 0.5;
+        }
+
+        .ud-empty-state p {
+          font-size: 18px;
+          font-weight: 600;
+          color: #475569;
+        }
+
+        .ud-empty-sub {
+          font-size: 13px;
           color: #94a3b8;
         }
 
+        /* Buttons */
+        .ud-actions {
+          display: flex;
+          gap: 16px;
+          flex-wrap: wrap;
+          margin-top: 8px;
+        }
+
         .ud-btn {
-          margin-top: 22px;
-          background: linear-gradient(135deg, #2563eb, #06b6d4);
-          color: #fff;
-          padding: 14px 26px;
+          padding: 14px 28px;
           border: none;
-          border-radius: 14px;
+          border-radius: 60px;
           font-size: 15px;
           font-weight: 700;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.25s ease;
+          font-family: inherit;
         }
 
-        .ud-btn:hover {
+        .ud-btn-primary {
+          background: linear-gradient(135deg, #2563eb, #06b6d4);
+          color: white;
+          box-shadow: 0 8px 20px rgba(37,99,235,0.25);
+        }
+
+        .ud-btn-primary:hover {
           transform: translateY(-3px);
-          box-shadow: 0 20px 50px rgba(37,99,235,0.45);
+          box-shadow: 0 15px 30px rgba(37,99,235,0.4);
+        }
+
+        .ud-btn-secondary {
+          background: white;
+          color: #2563eb;
+          border: 2px solid #e2e8f0;
+        }
+
+        .ud-btn-secondary:hover {
+          border-color: #2563eb;
+          transform: translateY(-2px);
+          background: #f8fafc;
+        }
+
+        /* Features */
+        .ud-features {
+          display: flex;
+          justify-content: space-between;
+          gap: 24px;
+          flex-wrap: wrap;
+        }
+
+        .ud-feature {
+          flex: 1;
+          background: white;
+          padding: 24px 20px;
+          border-radius: 28px;
+          text-align: center;
+          transition: all 0.3s ease;
+          box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+          border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .ud-feature:hover {
+          transform: translateY(-6px);
+          background: linear-gradient(135deg, #ffffff, #fefce8);
+          box-shadow: 0 20px 35px rgba(0,0,0,0.08);
+        }
+
+        .ud-feature-icon {
+          font-size: 44px;
+          margin-bottom: 16px;
+        }
+
+        .ud-feature h4 {
+          font-size: 18px;
+          font-weight: 700;
+          color: #0f172a;
+          margin-bottom: 8px;
+        }
+
+        .ud-feature p {
+          font-size: 13px;
+          color: #5b6e8c;
+          line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+          .ud-container {
+            padding: 20px 16px;
+          }
+
+          .ud-welcome {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .ud-welcome-text h1 {
+            font-size: 24px;
+          }
+
+          .ud-card {
+            padding: 20px;
+          }
+
+          .ud-card-header h3 {
+            font-size: 20px;
+          }
+
+          .ud-table th,
+          .ud-table td {
+            padding: 12px 8px;
+          }
+
+          .ud-actions {
+            flex-direction: column;
+          }
+
+          .ud-btn {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+          }
+
+          .ud-features {
+            flex-direction: column;
+          }
         }
       `}</style>
     </div>
