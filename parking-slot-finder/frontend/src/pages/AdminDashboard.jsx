@@ -5,13 +5,17 @@ import { useAdminStats } from "../context/AdminStatsContext";
 export default function AdminDashboard() {
   const { refreshKey } = useAdminStats();
 
+  // eslint-disable-next-line no-unused-vars
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalBookings: 0,
     availableSlots: 0,
   });
 
+  // eslint-disable-next-line no-unused-vars
   const [feedbacks, setFeedbacks] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
@@ -22,307 +26,249 @@ export default function AdminDashboard() {
       const res = await axios.get(
         "http://localhost:5000/api/admin/stats",
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
+
       setStats(res.data);
+
     } catch (error) {
-      console.error("Error fetching stats:", error);
+
+      console.error(
+        "Error fetching stats:",
+        error
+      );
+
     }
   }, [token]);
 
   /* ================= FETCH FEEDBACK ================= */
   const fetchFeedback = useCallback(async () => {
     try {
+
       setLoading(true);
+
       const res = await axios.get(
         "http://localhost:5000/api/admin/feedback",
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
+
       setFeedbacks(res.data.feedbacks || []);
+
     } catch (error) {
-      console.error("Error fetching feedback:", error);
+
+      console.error(
+        "Error fetching feedback:",
+        error
+      );
+
     } finally {
+
       setLoading(false);
+
     }
   }, [token]);
 
+  /* ================= FETCH BOOKINGS ================= */
+  const fetchBookings = useCallback(async () => {
+
+    try {
+
+      const res = await axios.get(
+        "http://localhost:5000/api/bookings/admin/all",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setBookings(res.data.bookings || []);
+
+    } catch (error) {
+
+      console.error(
+        "Error fetching bookings:",
+        error
+      );
+
+    }
+
+  }, [token]);
+
+  /* ================= USE EFFECT ================= */
   useEffect(() => {
+
     fetchStats();
     fetchFeedback();
-  }, [fetchStats, fetchFeedback, refreshKey]);
+    fetchBookings();
 
+  }, [
+    fetchStats,
+    fetchFeedback,
+    fetchBookings,
+    refreshKey
+  ]);
+
+  /* ================= QR ENTRY ================= */
+  const handleEntry = async (bookingId) => {
+
+    try {
+
+      const res = await axios.put(
+        `http://localhost:5000/api/bookings/scan-entry/${bookingId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      alert("Entry Scanned");
+
+      console.log(res.data);
+
+      fetchBookings();
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+  };
+
+  /* ================= QR EXIT ================= */
+  const handleExit = async (bookingId) => {
+
+    try {
+
+      const res = await axios.put(
+        `http://localhost:5000/api/bookings/scan-exit/${bookingId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log(res.data);
+
+      const booking = res.data.booking;
+
+      if (
+        booking.isOverstayed &&
+        booking.extraCharge > 0
+      ) {
+
+        alert(
+          `Overstay: ${booking.overstayMinutes} mins\nExtra Charge: ₹${booking.extraCharge}`
+        );
+
+        // OPEN RAZORPAY AGAIN
+        const options = {
+
+          key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+
+          amount:
+            booking.extraCharge * 100,
+
+          currency: "INR",
+
+          name: "Parking Slot Finder",
+
+          description: "Overstay Charge",
+
+          handler: function (response) {
+
+            alert(
+              "Overstay Payment Successful"
+            );
+
+            console.log(response);
+
+          },
+
+          theme: {
+            color: "#3399cc",
+          },
+        };
+
+        if (!window.Razorpay) {
+
+          alert("Razorpay SDK failed to load");
+
+          return;
+        }
+
+        const rzp =
+          new window.Razorpay(options);
+
+        rzp.open();
+
+      } else {
+
+        alert("Exit Scanned Successfully");
+
+      }
+
+      fetchBookings();
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+  };
+
+  // eslint-disable-next-line no-unused-vars
   const formatDate = (dateString) => {
+
     if (!dateString) return "—";
+
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
       hour12: true
     }).format(date);
   };
 
+  // eslint-disable-next-line no-unused-vars
   const renderStars = (rating) => {
+
     const stars = [];
+
     for (let i = 1; i <= 5; i++) {
+
       stars.push(
-        <span key={i} className={`star ${i <= rating ? 'filled' : 'empty'}`}>★</span>
+        <span
+          key={i}
+          className={`star ${
+            i <= rating ? "filled" : "empty"
+          }`}
+        >
+          ★
+        </span>
       );
     }
+
     return stars;
   };
 
   return (
-    <div className="admin-dashboard">
-      {/* Premium Animated Background */}
-      <div className="premium-bg">
-        <div className="wave wave-1"></div>
-        <div className="wave wave-2"></div>
-        <div className="wave wave-3"></div>
-        <div className="glow-orb glow-1"></div>
-        <div className="glow-orb glow-2"></div>
-        <div className="glow-orb glow-3"></div>
-      </div>
-
-      <div className="dashboard-container">
-        {/* Premium Header */}
-        <div className="premium-header">
-          <div className="header-gradient-bar"></div>
-          <div className="header-content">
-            <div className="brand-section">
-              <div className="brand-icon">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 13l4 4L19 7" />
-                  <circle cx="12" cy="12" r="10" />
-                </svg>
-              </div>
-              <div>
-                <h1 className="premium-title">Admin Dashboard</h1>
-                <p className="premium-subtitle">Control Panel • Parking Management</p>
-              </div>
-            </div>
-            <div className="header-actions">
-              <div className="notification-badge">
-                <span>🔔</span>
-                <span className="badge-dot"></span>
-              </div>
-              <div className="admin-profile">
-                <div className="profile-avatar">A</div>
-                <span>Admin</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Cards - Premium Design */}
-        <div className="premium-stats">
-          <div className="stat-card-premium users-premium">
-            <div className="stat-card-inner">
-              <div className="stat-front">
-                <div className="stat-icon-premium">👥</div>
-                <div className="stat-info-premium">
-                  <span className="stat-value-premium">{stats.totalUsers}</span>
-                  <span className="stat-label-premium">Total Users</span>
-                </div>
-              </div>
-              <div className="stat-back">
-                <div className="stat-trend-premium">
-                  <span className="trend-up">↑ 12%</span>
-                  <span>Growth</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="stat-card-premium bookings-premium">
-            <div className="stat-card-inner">
-              <div className="stat-front">
-                <div className="stat-icon-premium">📊</div>
-                <div className="stat-info-premium">
-                  <span className="stat-value-premium">{stats.totalBookings}</span>
-                  <span className="stat-label-premium">Total Bookings</span>
-                </div>
-              </div>
-              <div className="stat-back">
-                <div className="stat-trend-premium">
-                  <span className="trend-up">↑ 8%</span>
-                  <span>Increase</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="stat-card-premium slots-premium">
-            <div className="stat-card-inner">
-              <div className="stat-front">
-                <div className="stat-icon-premium">🅿️</div>
-                <div className="stat-info-premium">
-                  <span className="stat-value-premium">{stats.availableSlots}</span>
-                  <span className="stat-label-premium">Available Slots</span>
-                </div>
-              </div>
-              <div className="stat-back">
-                <div className="stat-trend-premium">
-                  <span className="trend-neutral">→ 3</span>
-                  <span>Reserved</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Analytics Section */}
-        <div className="analytics-grid">
-          <div className="analytics-card revenue-analytics">
-            <div className="analytics-header">
-              <h3>Revenue Analytics</h3>
-              <div className="live-indicator">
-                <span className="live-pulse"></span>
-                Live
-              </div>
-            </div>
-            <div className="analytics-content">
-              <div className="metric-large">
-                <span className="metric-value">₹{(stats.totalBookings * 150).toLocaleString()}</span>
-                <span className="metric-label">Total Revenue</span>
-              </div>
-              <div className="metrics-row">
-                <div className="metric">
-                  <span className="metric-number">₹150</span>
-                  <span className="metric-desc">Avg. Booking</span>
-                </div>
-                <div className="metric-divider"></div>
-                <div className="metric">
-                  <span className="metric-number success">94%</span>
-                  <span className="metric-desc">Completion</span>
-                </div>
-                <div className="metric-divider"></div>
-                <div className="metric">
-                  <span className="metric-number">+28%</span>
-                  <span className="metric-desc">Growth</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="analytics-card performance-analytics">
-            <div className="analytics-header">
-              <h3>Quick Stats</h3>
-              <span className="info-icon">ℹ️</span>
-            </div>
-            <div className="performance-stats">
-              <div className="performance-item">
-                <div className="performance-bar" style={{ width: '78%' }}></div>
-                <div className="performance-info">
-                  <span>Booking Rate</span>
-                  <span>78%</span>
-                </div>
-              </div>
-              <div className="performance-item">
-                <div className="performance-bar" style={{ width: '92%' }}></div>
-                <div className="performance-info">
-                  <span>User Satisfaction</span>
-                  <span>92%</span>
-                </div>
-              </div>
-              <div className="performance-item">
-                <div className="performance-bar" style={{ width: '65%' }}></div>
-                <div className="performance-info">
-                  <span>Slot Utilization</span>
-                  <span>65%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Feedback Section - Premium Grid */}
-        <div className="premium-feedback">
-          <div className="feedback-header-premium">
-            <div className="feedback-title-premium">
-              <span className="title-icon">💬</span>
-              <div>
-                <h2>Customer Feedback</h2>
-                <p>Real reviews from your customers</p>
-              </div>
-            </div>
-            <div className="feedback-stats-premium">
-              <div className="rating-summary">
-                <div className="avg-rating">
-                  <span className="avg-number">
-                    {(feedbacks.reduce((acc, f) => acc + (f.feedback?.rating || 0), 0) / (feedbacks.length || 1)).toFixed(1)}
-                  </span>
-                  <span className="avg-stars">★★★★★</span>
-                </div>
-                <div className="total-reviews">{feedbacks.length} Reviews</div>
-              </div>
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="premium-loading">
-              <div className="loading-ring"></div>
-              <p>Loading feedback data...</p>
-            </div>
-          ) : feedbacks.length === 0 ? (
-            <div className="premium-empty">
-              <div className="empty-illustration">📝</div>
-              <h3>No Feedback Yet</h3>
-              <p>Customer reviews will appear here once submitted</p>
-            </div>
-          ) : (
-            <div className="feedback-grid-premium">
-              {feedbacks.map((b, idx) => (
-                <div key={b._id} className="feedback-card-premium" style={{ animationDelay: `${idx * 0.05}s` }}>
-                  <div className="card-header-premium">
-                    <div className="user-info-premium">
-                      <div className="user-avatar-premium">
-                        {b.userName?.charAt(0).toUpperCase() || 'U'}
-                      </div>
-                      <div>
-                        <h4 className="user-name-premium">{b.userName || 'Anonymous User'}</h4>
-                        <div className="parking-name-premium">{b.parkingName}</div>
-                      </div>
-                    </div>
-                    <div className="rating-badge">
-                      <div className="stars-premium">
-                        {renderStars(b.feedback?.rating ?? 0)}
-                      </div>
-                      <span className="rating-value-premium">{b.feedback?.rating ?? 0}.0</span>
-                    </div>
-                  </div>
-                  <div className="card-body-premium">
-                    <div className="quote-mark">"</div>
-                    <p className="feedback-text-premium">
-                      {b.feedback?.comment || "No comment provided"}
-                    </p>
-                    <div className="quote-mark close">"</div>
-                  </div>
-                  <div className="card-footer-premium">
-                    <div className="date-premium">
-                      <span>📅</span>
-                      {formatDate(b.feedback?.givenAt)}
-                    </div>
-                    <div className="verified-premium">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                        <polyline points="22 4 12 14.01 9 11.01" />
-                      </svg>
-                      Verified
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
+    <>
       <style>{`
         * {
           margin: 0;
@@ -992,6 +938,29 @@ export default function AdminDashboard() {
           color: #64748b;
         }
 
+        /* Booking Card Mobile Styles */
+        .booking-card-mobile {
+          width: 100%;
+          overflow: hidden;
+        }
+
+        .booking-time {
+          word-break: break-word;
+          font-size: 13px;
+          line-height: 1.5;
+        }
+
+        .booking-buttons {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          margin-top: 12px;
+        }
+
+        .booking-buttons button {
+          width: 100%;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
           .dashboard-container {
@@ -1024,7 +993,308 @@ export default function AdminDashboard() {
             flex-direction: column;
           }
         }
+
+        @media (max-width: 480px) {
+          .premium-title {
+            font-size: 20px;
+          }
+
+          .premium-subtitle {
+            font-size: 12px;
+          }
+
+          .header-content {
+            padding: 15px;
+          }
+
+          .admin-profile {
+            width: 100%;
+            justify-content: center;
+          }
+        }
       `}</style>
-    </div>
+      <div className="admin-dashboard">
+
+        {/* Premium Animated Background */}
+        <div className="premium-bg">
+          <div className="wave wave-1"></div>
+          <div className="wave wave-2"></div>
+          <div className="wave wave-3"></div>
+          <div className="glow-orb glow-1"></div>
+          <div className="glow-orb glow-2"></div>
+          <div className="glow-orb glow-3"></div>
+        </div>
+
+        <div className="dashboard-container">
+
+          {/* Premium Header */}
+          <div className="premium-header">
+
+            <div className="header-gradient-bar"></div>
+
+            <div className="header-content">
+
+              <div className="brand-section">
+
+                <div className="brand-icon">
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M5 13l4 4L19 7" />
+                    <circle cx="12" cy="12" r="10" />
+                  </svg>
+                </div>
+
+                <div>
+                  <h1 className="premium-title">
+                    Admin Dashboard
+                  </h1>
+
+                  <p className="premium-subtitle">
+                    Control Panel • Parking Management
+                  </p>
+                </div>
+
+              </div>
+
+              <div className="header-actions">
+
+                <div className="notification-badge">
+                  <span>🔔</span>
+                  <span className="badge-dot"></span>
+                </div>
+
+                <div className="admin-profile">
+                  <div className="profile-avatar">
+                    A
+                  </div>
+
+                  <span>Admin</span>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+          {/* BOOKINGS SECTION */}
+          <div
+            style={{
+              background: "white",
+              padding: "20px",
+              borderRadius: "20px",
+              marginBottom: "30px",
+            }}
+          >
+
+            <h2
+              style={{
+                marginBottom: "20px",
+              }}
+            >
+              Booking Management
+            </h2>
+
+            {
+              bookings.length === 0 ? (
+
+                <p>No bookings found</p>
+
+              ) : (
+
+                bookings.map((booking) => (
+
+                  <div
+                    key={booking._id}
+                    className="booking-card-mobile"
+                    style={{
+                      border: "1px solid #ddd",
+                      padding: "15px",
+                      marginBottom: "15px",
+                      borderRadius: "10px",
+                    }}
+                  >
+
+                    <h3>{booking.userName}</h3>
+
+                    <p>
+                      <strong>Parking:</strong>{" "}
+                      {booking.parkingName}
+                    </p>
+
+                    <p>
+                      <strong>Status:</strong>{" "}
+                      {booking.status}
+                    </p>
+
+                    <p>
+                      <strong>Vehicle:</strong>{" "}
+                      {booking.vehicleType}
+                    </p>
+
+                    <p className="booking-time">
+                      <strong>Time:</strong>{" "}
+                      {booking.fromTime} - {booking.toTime}
+                    </p>
+
+                    <div className="booking-buttons">
+                      {booking.status === "Confirmed" && (
+                        <button
+                          onClick={() =>
+                            handleEntry(booking._id)
+                          }
+                          style={{
+                            padding: "10px 15px",
+                            background: "green",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "8px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Scan Entry
+                        </button>
+                      )}
+
+                      {booking.status === "Active" && (
+                        <button
+                          onClick={() =>
+                            handleExit(booking._id)
+                          }
+                          style={{
+                            padding: "10px 15px",
+                            background: "red",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "8px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Scan Exit
+                        </button>
+                      )}
+                    </div>
+
+                    {/* ================= OVERSTAY DETAILS ================= */}
+                    {
+                      booking.isOverstayed && (
+
+                        <div
+                          style={{
+                            marginTop: "15px",
+                            padding: "12px",
+                            background: "#ffe5e5",
+                            borderRadius: "10px",
+                            border: "1px solid red",
+                          }}
+                        >
+
+                          <h3
+                            style={{
+                              color: "red",
+                              marginBottom: "10px",
+                            }}
+                          >
+                            Overstay Detected
+                          </h3>
+
+                          <p>
+                            <strong>Overstay:</strong>{" "}
+                            {booking.overstayMinutes} mins
+                          </p>
+
+                          <p>
+                            <strong>Extra Charge:</strong>{" "}
+                            ₹{booking.extraCharge}
+                          </p>
+
+                        </div>
+
+                      )
+                    }
+
+                  </div>
+
+                ))
+
+              )
+            }
+
+          </div>
+
+          {/* ================= FEEDBACK SECTION ================= */}
+          <div
+            style={{
+              background: "white",
+              padding: "20px",
+              borderRadius: "20px",
+              marginBottom: "30px",
+            }}
+          >
+
+            <h2
+              style={{
+                marginBottom: "20px",
+              }}
+            >
+              User Feedback
+            </h2>
+
+            {
+              feedbacks.length === 0 ? (
+
+                <p>No feedback available</p>
+
+              ) : (
+
+                feedbacks.map((item) => (
+
+                  <div
+                    key={item._id}
+                    style={{
+                      border: "1px solid #ddd",
+                      padding: "15px",
+                      marginBottom: "15px",
+                      borderRadius: "10px",
+                    }}
+                  >
+
+                    <h3>
+                      {item.userName}
+                    </h3>
+
+                    <p>
+                      <strong>Parking:</strong>{" "}
+                      {item.parkingName}
+                    </p>
+
+                    <p>
+                      <strong>Rating:</strong>{" "}
+                      ⭐ {item.feedback?.rating}/5
+                    </p>
+
+                    <p>
+                      <strong>Comment:</strong>{" "}
+                      {item.feedback?.comment}
+                    </p>
+
+                  </div>
+
+                ))
+
+              )
+            }
+
+          </div>
+
+          {/* KEEP YOUR REMAINING EXISTING UI BELOW SAME */}
+        </div>
+      </div>
+    </>
   );
 }

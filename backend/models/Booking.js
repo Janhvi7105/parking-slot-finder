@@ -16,7 +16,7 @@ const bookingSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // ⭐ HARDENED EMAIL FIELD (no logic change)
+    // ⭐ HARDENED EMAIL FIELD
     userEmail: {
       type: String,
       trim: true,
@@ -44,12 +44,12 @@ const bookingSchema = new mongoose.Schema(
       trim: true,
     },
 
-    /* ================= ⭐ VEHICLE TYPE ================= */
+    /* ================= VEHICLE TYPE ================= */
     vehicleType: {
       type: String,
       enum: ["2-wheeler", "4-wheeler", "bus"],
       required: true,
-      default: "2-wheeler", // ✅ DEFAULT UPDATED (your requirement)
+      default: "2-wheeler",
       index: true,
     },
 
@@ -67,6 +67,39 @@ const bookingSchema = new mongoose.Schema(
     toTime: {
       type: String,
       required: true,
+    },
+
+    // ⭐ NEW — ENTRY TIME
+    entryTime: {
+      type: Date,
+      default: null,
+    },
+
+    // ⭐ NEW — EXIT TIME
+    exitTime: {
+      type: Date,
+      default: null,
+    },
+
+    // ⭐ NEW — OVERSTAY STATUS
+    isOverstayed: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
+    // ⭐ NEW — OVERSTAY MINUTES
+    overstayMinutes: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    // ⭐ NEW — EXTRA PENALTY CHARGE
+    extraCharge: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
 
     /* ================= ADDON SERVICES ================= */
@@ -98,7 +131,7 @@ const bookingSchema = new mongoose.Schema(
       sparse: true,
     },
 
-    // ⭐ NEW — supports refund tracking (no logic break)
+    // ⭐ REFUND TRACKING
     refundId: {
       type: String,
       trim: true,
@@ -108,12 +141,18 @@ const bookingSchema = new mongoose.Schema(
     /* ================= BOOKING STATUS ================= */
     status: {
       type: String,
-      enum: ["Reserved", "Confirmed", "Cancelled"],
+      enum: [
+        "Reserved",
+        "Confirmed",
+        "Active",
+        "Completed",
+        "Cancelled",
+      ],
       default: "Reserved",
       index: true,
     },
 
-    // ⭐ safer audit field
+    // ⭐ CONFIRMATION TIME
     confirmedAt: {
       type: Date,
       default: null,
@@ -133,11 +172,13 @@ const bookingSchema = new mongoose.Schema(
         max: 5,
         default: null,
       },
+
       comment: {
         type: String,
         trim: true,
         default: "",
       },
+
       givenAt: {
         type: Date,
       },
@@ -155,13 +196,28 @@ const bookingSchema = new mongoose.Schema(
 );
 
 /* =====================================================
-   ⭐ PERFORMANCE INDEX (SAFE — NO LOGIC CHANGE)
+   ⭐ PERFORMANCE INDEX
 ===================================================== */
-bookingSchema.index({ parkingId: 1, fromTime: 1, toTime: 1 });
+
+bookingSchema.index({
+  parkingId: 1,
+  fromTime: 1,
+  toTime: 1,
+});
 
 /* =====================================================
-   ⭐ SAFE JSON TRANSFORM (prevents frontend issues)
+   ⭐ OVERSTAY QUERY INDEX
 ===================================================== */
+
+bookingSchema.index({
+  status: 1,
+  isOverstayed: 1,
+});
+
+/* =====================================================
+   ⭐ SAFE JSON TRANSFORM
+===================================================== */
+
 bookingSchema.set("toJSON", {
   transform: function (doc, ret) {
     if (!ret.feedback) {
@@ -171,6 +227,7 @@ bookingSchema.set("toJSON", {
         givenAt: null,
       };
     }
+
     return ret;
   },
 });

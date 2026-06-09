@@ -210,20 +210,20 @@ export default function Reservations() {
                           </div>
                           <span className="user-name">{b.userName}</span>
                         </div>
-                      </td>
+                       </td>
                       <td className="parking-cell">
                         <div className="parking-info">
                           <span className="parking-icon">🏢</span>
                           <span>{b.parkingName}</span>
                         </div>
-                      </td>
+                       </td>
                       <td className="amount-cell">₹{b.amount}</td>
                       <td className="status-cell">
                         <span className={`status-badge ${b.status.toLowerCase()}`}>
                           <span className="status-dot"></span>
                           {b.status === "Reserved" ? "Pending" : b.status}
                         </span>
-                      </td>
+                       </td>
                       <td className="actions-cell">
                         {b.status === "Reserved" ? (
                           <div className="action-buttons">
@@ -248,7 +248,7 @@ export default function Reservations() {
                             <span>Locked</span>
                           </div>
                         )}
-                      </td>
+                       </td>
                     </tr>
                   ))}
                 </tbody>
@@ -691,46 +691,110 @@ export default function Reservations() {
           color: #64748b;
         }
 
-        /* Responsive */
+        /* Responsive - Tablet */
         @media (max-width: 768px) {
           .reservations-container {
-            padding: 20px;
+            padding: 12px;
           }
 
           .reservations-header {
             flex-direction: column;
             text-align: center;
+            padding: 18px;
+            border-radius: 20px;
           }
 
           .header-left {
             flex-direction: column;
+            gap: 12px;
+          }
+
+          .header-stats {
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
           }
 
           .page-title {
-            font-size: 24px;
+            font-size: 22px;
+          }
+
+          .page-subtitle {
+            font-size: 13px;
           }
 
           .filters-section {
             flex-direction: column;
+            align-items: stretch;
+          }
+
+          .filter-group {
+            justify-content: center;
+          }
+
+          .search-group {
+            width: 100%;
           }
 
           .search-input {
             width: 100%;
           }
 
-          .reservations-table th,
-          .reservations-table td {
-            padding: 12px;
-            font-size: 12px;
+          .table-container {
+            border-radius: 18px;
           }
 
-          .action-buttons {
+          .table-wrapper {
+            overflow-x: auto;
+          }
+
+          .reservations-table {
+            min-width: 700px;
+          }
+
+          .actions-cell .action-buttons {
             flex-direction: column;
           }
 
           .action-btn {
             width: 100%;
             justify-content: center;
+          }
+        }
+
+        /* Responsive - iPhone / Small Screens */
+        @media (max-width: 480px) {
+          .reservations-container {
+            padding: 8px;
+          }
+
+          .page-title {
+            font-size: 20px;
+          }
+
+          .header-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 22px;
+          }
+
+          .stat-card-mini {
+            padding: 10px 14px;
+          }
+
+          .stat-value {
+            font-size: 22px;
+          }
+
+          .filter-btn {
+            flex: 1;
+            text-align: center;
+          }
+
+          .filter-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            width: 100%;
           }
         }
       `}</style>

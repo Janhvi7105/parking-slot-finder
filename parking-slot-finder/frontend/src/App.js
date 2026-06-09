@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 /* ================= PUBLIC PAGES ================= */
 import Home from "./pages/Home";
@@ -27,15 +27,16 @@ import Users from "./pages/Users";
 /* ================= CONTEXT ================= */
 import { AdminStatsProvider } from "./context/AdminStatsContext";
 
+/* ================= CHATBOT ================= */
+import ChatBot from "./components/ChatBot";
+
 /* ================= ROUTE GUARDS ================= */
 
-// ✅ USER GUARD (unchanged logic)
 const UserProtected = ({ children }) => {
   const token = localStorage.getItem("token");
   return token ? children : <Navigate to="/user-login" />;
 };
 
-// ✅ ADMIN GUARD — BULLETPROOF FIX
 const AdminProtected = ({ children }) => {
   let user = null;
 
@@ -44,12 +45,9 @@ const AdminProtected = ({ children }) => {
 
     if (rawUser && rawUser !== "undefined" && rawUser !== "null") {
       user = JSON.parse(rawUser);
-    } else {
-      user = null;
     }
   } catch (err) {
     console.warn("⚠️ Invalid admin user in localStorage");
-    user = null;
   }
 
   return user?.role === "admin"
@@ -57,9 +55,26 @@ const AdminProtected = ({ children }) => {
     : <Navigate to="/admin-login" />;
 };
 
+/* ================= CHATBOT WRAPPER ================= */
+
+// 🔥 Hide chatbot on login pages (better UX)
+const ChatBotWrapper = () => {
+  const location = useLocation();
+
+  const hideOnPaths = ["/user-login", "/login", "/admin-login"];
+
+  if (hideOnPaths.includes(location.pathname)) return null;
+
+  return <ChatBot />;
+};
+
+/* ================= MAIN APP ================= */
+
 function App() {
   return (
     <BrowserRouter>
+
+      {/* ================= ROUTES ================= */}
       <Routes>
 
         {/* ============ PUBLIC ROUTES ============ */}
@@ -111,6 +126,10 @@ function App() {
         <Route path="*" element={<Navigate to="/" />} />
 
       </Routes>
+
+      {/* ================= CHATBOT GLOBAL ================= */}
+      <ChatBotWrapper />
+
     </BrowserRouter>
   );
 }

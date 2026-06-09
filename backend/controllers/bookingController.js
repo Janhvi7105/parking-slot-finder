@@ -36,9 +36,156 @@ export const getMyBookings = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Fetch user bookings error:", error);
+
     res.status(500).json({
       success: false,
       message: "Failed to fetch bookings",
+    });
+  }
+};
+
+/* =====================================================
+QR ENTRY SCAN
+===================================================== */
+export const scanEntry = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    // Prevent duplicate entry scan
+    if (booking.entryTime) {
+      return res.status(400).json({
+        success: false,
+        message: "Entry already scanned",
+      });
+    }
+
+    booking.entryTime = new Date();
+
+    booking.status = "Active";
+
+    await booking.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Entry scanned successfully",
+      booking,
+    });
+  } catch (error) {
+    console.error("❌ Scan entry error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to scan entry",
+    });
+  }
+};
+
+/* =====================================================
+QR EXIT SCAN + OVERSTAY CALCULATION
+===================================================== */
+export const scanExit = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    // Prevent duplicate exit scan
+    if (booking.exitTime) {
+      return res.status(400).json({
+        success: false,
+        message: "Exit already scanned",
+      });
+    }
+
+    const currentTime = new Date();
+
+    booking.exitTime = currentTime;
+
+    /* =====================================================
+       OVERSTAY LOGIC
+    ===================================================== */
+
+    // Combine booking date + toTime
+    const bookingEndTime = new Date(
+      `${booking.bookingDate} ${booking.toTime}`
+    );
+
+    const overtime = Math.floor(
+      (
+        currentTime.getTime() -
+        bookingEndTime.getTime()
+      ) / (1000 * 60)
+    );
+
+    // If overtime exists
+    if (overtime > 0) {
+
+      booking.isOverstayed = true;
+
+      booking.overstayMinutes = overtime;
+
+      /* =====================================================
+         EXTRA CHARGE RULES
+      ===================================================== */
+
+      // 0–15 mins free
+      if (overtime <= 15) {
+
+        booking.extraCharge = 0;
+
+      }
+
+      // 15–60 mins
+      else if (overtime <= 60) {
+
+        booking.extraCharge = 20;
+
+      }
+
+      // 1–2 hours
+      else if (overtime <= 120) {
+
+        booking.extraCharge = 50;
+
+      }
+
+      // More than 2 hours
+      else {
+
+        booking.extraCharge = 100;
+
+      }
+    }
+
+    booking.status = "Completed";
+
+    await booking.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Exit scanned successfully",
+      booking,
+    });
+
+  } catch (error) {
+
+    console.error("❌ Scan exit error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to scan exit",
     });
   }
 };
@@ -58,6 +205,7 @@ export const getAllBookingsForAdmin = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Fetch admin bookings error:", error);
+
     res.status(500).json({
       success: false,
       message: "Failed to fetch bookings",
@@ -70,9 +218,11 @@ ADMIN: CONFIRM BOOKING
 ===================================================== */
 export const confirmBookingByAdmin = async (req, res) => {
   try {
-    const bookingId = req.params.bookingId || req.params.id;
+    const bookingId =
+      req.params.bookingId || req.params.id;
 
-    const booking = await Booking.findById(bookingId);
+    const booking =
+      await Booking.findById(bookingId);
 
     if (!booking) {
       return res.status(404).json({
@@ -84,67 +234,113 @@ export const confirmBookingByAdmin = async (req, res) => {
     if (booking.status !== "Reserved") {
       return res.status(400).json({
         success: false,
-        message: "Only reserved bookings can be confirmed",
+        message:
+          "Only reserved bookings can be confirmed",
       });
     }
 
     /* ================= UPDATE STATUS ================= */
+
     booking.status = "Confirmed";
+
     booking.confirmedAt = new Date();
+
     await booking.save();
 
     /* ================= RECEIPT + EMAIL FLOW ================= */
+
     try {
+
       const updatedBooking = {
         ...booking.toObject(),
-        vehicleType: booking.vehicleType || "2-wheeler",
+        vehicleType:
+          booking.vehicleType || "2-wheeler",
       };
 
-      console.log("🚗 Vehicle for receipt:", updatedBooking.vehicleType);
-
-      // ✅ generate QR
-      const qrImage = await generateQR(updatedBooking);
-
-      // ✅ generate PDF
-      const pdfBuffer = await generateReceiptPDF(
-        updatedBooking,
-        qrImage
+      console.log(
+        "🚗 Vehicle for receipt:",
+        updatedBooking.vehicleType
       );
 
+      // Generate QR
+      const qrImage =
+        await generateQR(updatedBooking);
+
+      // Generate PDF
+      const pdfBuffer =
+        await generateReceiptPDF(
+          updatedBooking,
+          qrImage
+        );
+
       /* =====================================================
-         ⭐⭐⭐ BULLETPROOF EMAIL RESOLUTION ⭐⭐⭐
+         BULLETPROOF EMAIL RESOLUTION
       ===================================================== */
 
-      let emailToSend = updatedBooking.userEmail?.trim();
+      let emailToSend =
+        updatedBooking.userEmail?.trim();
 
-      console.log("🔎 booking.userEmail:", updatedBooking.userEmail);
-      console.log("🔎 booking.userId:", updatedBooking.userId);
+      console.log(
+        "🔎 booking.userEmail:",
+        updatedBooking.userEmail
+      );
 
-      const normalizedUserId = mongoose.Types.ObjectId.isValid(
+      console.log(
+        "🔎 booking.userId:",
         updatedBooking.userId
-      )
-        ? new mongoose.Types.ObjectId(updatedBooking.userId)
-        : updatedBooking.userId;
+      );
+
+      const normalizedUserId =
+        mongoose.Types.ObjectId.isValid(
+          updatedBooking.userId
+        )
+          ? new mongoose.Types.ObjectId(
+              updatedBooking.userId
+            )
+          : updatedBooking.userId;
 
       if (!emailToSend) {
+
         try {
-          const user = await User.findById(normalizedUserId);
-          console.log("🔎 user from DB:", user?.email);
+
+          const user =
+            await User.findById(
+              normalizedUserId
+            );
+
+          console.log(
+            "🔎 user from DB:",
+            user?.email
+          );
 
           if (user?.email) {
-            emailToSend = user.email.trim().toLowerCase();
+
+            emailToSend =
+              user.email
+                .trim()
+                .toLowerCase();
+
             console.log(
               "📩 Email fetched from User model:",
               emailToSend
             );
           }
+
         } catch (err) {
-          console.log("⚠️ Could not fetch user email");
+
+          console.log(
+            "⚠️ Could not fetch user email"
+          );
+
         }
       }
 
-      /* ================= FINAL SAFE GUARD (UPDATED) ================= */
-      console.log("📨 FINAL EMAIL TO SEND:", emailToSend);
+      /* ================= FINAL SAFE GUARD ================= */
+
+      console.log(
+        "📨 FINAL EMAIL TO SEND:",
+        emailToSend
+      );
 
       if (
         emailToSend &&
@@ -152,26 +348,52 @@ export const confirmBookingByAdmin = async (req, res) => {
         pdfBuffer &&
         pdfBuffer.length > 1000
       ) {
-        console.log("📎 Final PDF buffer length:", pdfBuffer.length);
-        await sendReceiptMail(emailToSend, pdfBuffer);
+
+        console.log(
+          "📎 Final PDF buffer length:",
+          pdfBuffer.length
+        );
+
+        await sendReceiptMail(
+          emailToSend,
+          pdfBuffer
+        );
+
         console.log("📧 Receipt email sent");
+
       } else {
+
         console.log(
           "⚠️ Skipping email — PDF not ready or email invalid"
         );
+
       }
 
-      console.log("✅ Confirmation flow completed");
+      console.log(
+        "✅ Confirmation flow completed"
+      );
+
     } catch (mailError) {
-      console.error("❌ Receipt/email error:", mailError);
+
+      console.error(
+        "❌ Receipt/email error:",
+        mailError
+      );
+
     }
 
     res.status(200).json({
       success: true,
       message: "Booking confirmed successfully",
     });
+
   } catch (error) {
-    console.error("❌ Admin confirm error:", error);
+
+    console.error(
+      "❌ Admin confirm error:",
+      error
+    );
+
     res.status(500).json({
       success: false,
       message: "Confirmation failed",
@@ -184,9 +406,11 @@ ADMIN: CANCEL BOOKING
 ===================================================== */
 export const cancelBookingByAdmin = async (req, res) => {
   try {
-    const bookingId = req.params.bookingId || req.params.id;
+    const bookingId =
+      req.params.bookingId || req.params.id;
 
-    const booking = await Booking.findById(bookingId);
+    const booking =
+      await Booking.findById(bookingId);
 
     if (!booking) {
       return res.status(404).json({
@@ -203,34 +427,54 @@ export const cancelBookingByAdmin = async (req, res) => {
     }
 
     /* ================= AUTO REFUND ================= */
+
     if (booking.paymentId) {
+
       try {
-        const refund = await razorpay.payments.refund(
-          booking.paymentId,
-          {
-            amount: booking.amount * 100,
-          }
+
+        const refund =
+          await razorpay.payments.refund(
+            booking.paymentId,
+            {
+              amount: booking.amount * 100,
+            }
+          );
+
+        console.log(
+          "✅ Refund successful:",
+          refund.id
         );
 
-        console.log("✅ Refund successful:", refund.id);
       } catch (refundError) {
+
         console.error(
           "❌ Refund failed:",
-          refundError?.error?.description || refundError
+          refundError?.error?.description ||
+            refundError
         );
-        console.log("⚠️ Continuing cancellation anyway");
+
+        console.log(
+          "⚠️ Continuing cancellation anyway"
+        );
       }
     }
 
     booking.status = "Cancelled";
+
     await booking.save();
 
     res.status(200).json({
       success: true,
       message: "Booking cancelled successfully",
     });
+
   } catch (error) {
-    console.error("❌ Admin cancel error:", error);
+
+    console.error(
+      "❌ Admin cancel error:",
+      error
+    );
+
     res.status(500).json({
       success: false,
       message: "Cancellation failed",
@@ -243,38 +487,61 @@ USER: SUBMIT FEEDBACK
 ===================================================== */
 export const submitFeedback = async (req, res) => {
   try {
-    const { bookingId, rating, comment } = req.body;
 
-    console.log("📝 Feedback request:", req.body);
+    const {
+      bookingId,
+      rating,
+      comment
+    } = req.body;
+
+    console.log(
+      "📝 Feedback request:",
+      req.body
+    );
 
     if (!bookingId || !rating) {
+
       return res.status(400).json({
         success: false,
-        message: "Booking ID and rating are required",
+        message:
+          "Booking ID and rating are required",
       });
+
     }
 
-    const booking = await Booking.findById(bookingId);
+    const booking =
+      await Booking.findById(bookingId);
 
     if (!booking) {
+
       return res.status(404).json({
         success: false,
         message: "Booking not found",
       });
+
     }
 
-    if (booking.status !== "Confirmed") {
+    if (
+      booking.status !== "Confirmed" &&
+      booking.status !== "Completed"
+    ) {
+
       return res.status(400).json({
         success: false,
-        message: "Feedback allowed only for confirmed bookings",
+        message:
+          "Feedback allowed only for completed or confirmed bookings",
       });
+
     }
 
     if (booking.feedbackSubmitted) {
+
       return res.status(400).json({
         success: false,
-        message: "Feedback already submitted",
+        message:
+          "Feedback already submitted",
       });
+
     }
 
     booking.feedback = {
@@ -287,18 +554,29 @@ export const submitFeedback = async (req, res) => {
 
     await booking.save();
 
-    console.log("✅ Feedback saved:", booking._id);
+    console.log(
+      "✅ Feedback saved:",
+      booking._id
+    );
 
     res.status(200).json({
       success: true,
-      message: "Feedback submitted successfully",
+      message:
+        "Feedback submitted successfully",
       booking,
     });
+
   } catch (error) {
-    console.error("❌ Submit feedback error:", error);
+
+    console.error(
+      "❌ Submit feedback error:",
+      error
+    );
+
     res.status(500).json({
       success: false,
-      message: "Failed to submit feedback",
+      message:
+        "Failed to submit feedback",
     });
   }
 };

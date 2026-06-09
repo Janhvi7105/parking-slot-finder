@@ -103,24 +103,28 @@ export default function UserDashboard() {
                       <p>No recent bookings found</p>
                       <span className="ud-empty-sub">Start your first parking session now</span>
                     </div>
-                  </td>
+                   </td>
                 </tr>
               ) : (
                 bookings.map((b, idx) => (
-                  <tr key={b._id} className="ud-table-row" style={{ animationDelay: `${idx * 0.05}s` }}>
-                    <td className="ud-parking">
+                  <tr
+                    key={b._id}
+                    className="ud-table-row ud-mobile-card"
+                    style={{ animationDelay: `${idx * 0.05}s` }}
+                  >
+                    <td className="ud-parking" data-label="Parking">
                       <div className="ud-parking-info">
                         <span className="ud-parking-icon">📍</span>
                         <span>{b.parkingName}</span>
                       </div>
                     </td>
-                    <td className="ud-date">
+                    <td className="ud-date" data-label="Date & Time">
                       <div className="ud-date-info">
                         <span className="ud-date-icon">📅</span>
                         <span>{new Date(b.createdAt).toLocaleString()}</span>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Status">
                       <span
                         className={`ud-status ${
                           b.status === "Confirmed"
@@ -528,6 +532,7 @@ export default function UserDashboard() {
             padding: 20px 16px;
           }
 
+          /* Welcome section improvements */
           .ud-welcome {
             flex-direction: column;
             align-items: flex-start;
@@ -537,19 +542,67 @@ export default function UserDashboard() {
             font-size: 24px;
           }
 
+          .ud-stats-badge {
+            width: 100%;
+            justify-content: center;
+          }
+
+          /* Card padding */
           .ud-card {
-            padding: 20px;
+            padding: 18px;
           }
 
           .ud-card-header h3 {
             font-size: 20px;
           }
 
-          .ud-table th,
-          .ud-table td {
-            padding: 12px 8px;
+          /* Mobile card layout - hide table header */
+          .ud-table thead {
+            display: none;
           }
 
+          .ud-table,
+          .ud-table tbody,
+          .ud-table tr,
+          .ud-table td {
+            display: block;
+            width: 100%;
+          }
+
+          .ud-mobile-card {
+            background: white;
+            border-radius: 18px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+          }
+
+          .ud-mobile-card td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border: none;
+            border-bottom: 1px solid #e5e7eb;
+          }
+
+          .ud-mobile-card td:last-child {
+            border-bottom: none;
+          }
+
+          .ud-mobile-card td::before {
+            content: attr(data-label);
+            font-weight: 700;
+            color: #64748b;
+            margin-right: 15px;
+            font-size: 12px;
+          }
+
+          .ud-table-wrapper {
+            overflow-x: hidden;
+          }
+
+          /* Action buttons */
           .ud-actions {
             flex-direction: column;
           }
@@ -560,6 +613,7 @@ export default function UserDashboard() {
             justify-content: center;
           }
 
+          /* Features section */
           .ud-features {
             flex-direction: column;
           }

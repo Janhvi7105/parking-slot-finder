@@ -783,33 +783,116 @@ export default function SearchParking() {
           width: 100%;
         }
 
-        /* Responsive */
+        /* Responsive - Tablet */
         @media (max-width: 768px) {
           .search-page {
-            padding: 20px 16px;
+            padding: 12px;
           }
 
           .hero-title {
-            font-size: 32px;
+            font-size: 28px;
+            line-height: 1.2;
           }
 
           .hero-subtitle {
             font-size: 14px;
           }
 
+          .search-input {
+            padding: 16px 50px;
+            font-size: 14px;
+          }
+
+          .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+          }
+
+          .stat-card {
+            padding: 16px;
+          }
+
           .stat-value {
-            font-size: 24px;
+            font-size: 22px;
+          }
+
+          .map-header {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .map-legend {
+            flex-wrap: wrap;
+            gap: 10px;
+          }
+
+          .parking-card {
+            padding: 16px;
+          }
+
+          .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .table-wrapper {
+            overflow-x: auto;
+          }
+
+          .parking-table {
+            min-width: 700px;
+          }
+
+          .book-btn {
+            padding: 8px 14px;
+            font-size: 12px;
           }
 
           .parking-table td,
           .parking-table th {
-            padding: 12px 10px;
+            padding: 10px;
             font-size: 12px;
           }
+        }
 
-          .book-btn {
-            padding: 6px 16px;
+        /* Responsive - iPhone / Small Screens */
+        @media (max-width: 480px) {
+          .hero-title {
+            font-size: 24px;
+          }
+
+          .hero-subtitle {
+            font-size: 13px;
+          }
+
+          .search-container {
+            border-radius: 20px;
+          }
+
+          .search-input {
+            border-radius: 20px;
+          }
+
+          .search-result-badge {
+            font-size: 12px;
+            padding: 10px;
+          }
+
+          .map-header-left h3 {
+            font-size: 16px;
+          }
+
+          .legend-item {
             font-size: 11px;
+          }
+
+          .stat-icon {
+            font-size: 28px;
+          }
+
+          .result-count {
+            width: 100%;
+            text-align: center;
           }
         }
       `}</style>

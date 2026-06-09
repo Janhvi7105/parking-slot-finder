@@ -66,7 +66,7 @@ export default function BookingHistory() {
 
       const token = localStorage.getItem("token");
 
-      await axios.post(
+      const res = await axios.post(
         "http://localhost:5000/api/bookings/feedback",
         {
           bookingId: selectedBooking._id,
@@ -80,17 +80,24 @@ export default function BookingHistory() {
         }
       );
 
-      alert("Feedback submitted ⭐");
+      console.log(res.data);
 
+      alert("Feedback submitted successfully");
+
+      // CLOSE MODAL
       setShowModal(false);
+
+      // RESET STATES
+      setSelectedBooking(null);
       setRating(0);
       setComment("");
-      setSelectedBooking(null);
 
+      // REFRESH BOOKINGS
       fetchBookings();
-    } catch (err) {
-      console.error("❌ Feedback submit error:", err.response?.data || err);
-      alert("Failed to submit feedback");
+
+    } catch (error) {
+      console.log(error.response?.data || error);
+      alert(error.response?.data?.message || "Feedback failed");
     }
   };
 
@@ -179,8 +186,34 @@ export default function BookingHistory() {
 
       {/* ================= FEEDBACK MODAL ================= */}
       {showModal && (
-        <div className="bh-overlay">
-          <div className="bh-modal">
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              position: "relative",
+              zIndex: 10000,
+              pointerEvents: "auto",
+              background: "#fff",
+              padding: "30px",
+              width: "90%",
+              maxWidth: "340px",
+              borderRadius: "22px",
+              textAlign: "center",
+              boxShadow: "0 30px 80px rgba(0,0,0,.25)",
+            }}
+          >
             <h3>Rate your parking</h3>
 
             <div className="bh-stars">
@@ -200,20 +233,52 @@ export default function BookingHistory() {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={3}
+              style={{
+                width: "100%",
+                padding: "10px",
+                borderRadius: "10px",
+                border: "1px solid #e5e7eb",
+                marginTop: "10px",
+              }}
             />
 
-            <div className="bh-modal-actions">
+            <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
               <button
-                className="bh-submit"
                 onClick={submitFeedback}
                 disabled={rating === 0}
+                style={{
+                  flex: 1,
+                  background: "#22c55e",
+                  color: "#fff",
+                  border: "none",
+                  padding: "10px",
+                  borderRadius: "12px",
+                  fontWeight: 600,
+                  position: "relative",
+                  zIndex: 10001,
+                  cursor: "pointer",
+                }}
               >
                 Submit
               </button>
 
               <button
-                className="bh-cancel"
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  setShowModal(false);
+                  setSelectedBooking(null);
+                  setRating(0);
+                  setComment("");
+                }}
+                style={{
+                  flex: 1,
+                  background: "#e5e7eb",
+                  border: "none",
+                  padding: "10px",
+                  borderRadius: "12px",
+                  position: "relative",
+                  zIndex: 10001,
+                  cursor: "pointer",
+                }}
               >
                 Cancel
               </button>
@@ -222,7 +287,7 @@ export default function BookingHistory() {
         </div>
       )}
 
-      {/* ✅ YOUR STYLES — UNCHANGED */}
+      {/* ✅ YOUR STYLES — UPDATED WITH MOBILE RESPONSIVENESS */}
       <style>{`
         .bh-container {
           padding: 32px;
@@ -273,36 +338,68 @@ export default function BookingHistory() {
         }
         .bh-feedback-done { color: #16a34a; font-weight: 700; text-align: right; }
         .bh-feedback-na { color: #9ca3af; }
-        .bh-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,.55);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 9999;
-        }
-        .bh-modal {
-          background: #fff;
-          padding: 30px;
-          width: 340px;
-          border-radius: 22px;
-          text-align: center;
-          box-shadow: 0 30px 80px rgba(0,0,0,.25);
-        }
         .bh-stars { margin: 14px 0; }
         .star { font-size: 32px; cursor: pointer; color: #e5e7eb; }
         .star.active { color: #facc15; }
-        .bh-modal textarea {
-          width: 100%;
-          padding: 10px;
-          border-radius: 10px;
-          border: 1px solid #e5e7eb;
-          margin-top: 10px;
+
+        /* Responsive - Tablet */
+        @media (max-width: 768px) {
+          .bh-container {
+            padding: 16px;
+          }
+
+          .bh-title {
+            font-size: 24px;
+            text-align: center;
+          }
+
+          .bh-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 18px;
+          }
+
+          .bh-right {
+            width: 100%;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 10px;
+          }
+
+          .bh-time {
+            flex-direction: column;
+            gap: 6px;
+          }
+
+          .bh-feedback-done {
+            text-align: left;
+          }
         }
-        .bh-modal-actions { display: flex; gap: 12px; margin-top: 16px; }
-        .bh-submit { flex: 1; background: #22c55e; color: #fff; border: none; padding: 10px; border-radius: 12px; font-weight: 600; }
-        .bh-cancel { flex: 1; background: #e5e7eb; border: none; padding: 10px; border-radius: 12px; }
+
+        /* Responsive - iPhone / Small Screens */
+        @media (max-width: 480px) {
+          .bh-title {
+            font-size: 22px;
+          }
+
+          .bh-parking {
+            font-size: 16px;
+          }
+
+          .bh-amount {
+            font-size: 15px;
+          }
+
+          .bh-status {
+            font-size: 11px;
+            padding: 6px 12px;
+          }
+
+          .bh-feedback-btn {
+            width: 100%;
+          }
+        }
       `}</style>
     </div>
   );

@@ -885,40 +885,146 @@ export default function ManageParking() {
           color: #94a3b8;
         }
 
-        /* Responsive */
+        /* Responsive - Tablet */
         @media (max-width: 768px) {
           .mp-content {
-            padding: 20px;
+            padding: 12px;
           }
 
           .mp-header {
             flex-direction: column;
             text-align: center;
+            padding: 18px;
+            border-radius: 20px;
           }
 
           .mp-header-left {
             flex-direction: column;
-            text-align: center;
+            gap: 12px;
           }
 
           .mp-title {
-            font-size: 24px;
+            font-size: 22px;
+          }
+
+          .mp-subtitle {
+            font-size: 13px;
+          }
+
+          .stat-chip {
+            width: 100%;
+          }
+
+          .mp-form-card,
+          .mp-map-card,
+          .mp-table-card {
+            padding: 16px;
+            border-radius: 20px;
+          }
+
+          .form-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+          }
+
+          .form-badge {
+            align-self: flex-start;
           }
 
           .mp-form-grid {
             grid-template-columns: 1fr;
+            gap: 14px;
+          }
+
+          .input-group input {
+            width: 100%;
+          }
+
+          .form-actions {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .mp-add-btn {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .location-confirm {
+            width: 100%;
+            text-align: center;
+          }
+
+          .map-header {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .mp-map {
+            height: 300px;
+          }
+
+          .table-header {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .table-search {
+            width: 100%;
           }
 
           .table-search input {
             width: 100%;
           }
 
+          .table-wrapper {
+            overflow-x: auto;
+          }
+
           .actions-cell {
             flex-direction: column;
           }
 
-          .edit-btn, .delete-btn {
+          .edit-btn,
+          .delete-btn {
             width: 100%;
+          }
+        }
+
+        /* Responsive - iPhone / Small Screens */
+        @media (max-width: 480px) {
+          .mp-content {
+            padding: 8px;
+          }
+
+          .mp-title {
+            font-size: 20px;
+          }
+
+          .mp-header-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 22px;
+          }
+
+          .mp-form-card,
+          .mp-map-card,
+          .mp-table-card {
+            padding: 12px;
+          }
+
+          .form-header h3 {
+            font-size: 16px;
+          }
+
+          .mp-add-btn {
+            padding: 12px;
+            font-size: 14px;
+          }
+
+          .mp-map {
+            height: 250px;
           }
         }
       `}</style>

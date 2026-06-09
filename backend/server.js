@@ -22,13 +22,14 @@ import adminRoutes from "./routes/adminRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
 
 // ================= APP SETUP =================
 const app = express();
 
 app.use(cors());
-app.use(express.json()); // ✅ JSON body parser
-app.use(express.urlencoded({ extended: true })); // ✅ keeps your logic
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 /* =====================================================
    ⭐ SERVE RECEIPTS (UNCHANGED)
@@ -42,20 +43,23 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/chat", chatRoutes); // ✅ CHAT ROUTE CONNECTED
 
 // ================= HEALTH CHECK =================
 app.get("/", (req, res) => {
   res.send("Backend running successfully 🚀");
 });
 
-// ================= ENV DEBUG (SAFE LOGGING) =================
-console.log("ENV CHECK → RAZORPAY_KEY_ID:", process.env.RAZORPAY_KEY_ID || "❌ NOT FOUND");
-console.log(
-  "ENV CHECK → RAZORPAY_KEY_SECRET LOADED:",
-  !!process.env.RAZORPAY_KEY_SECRET
-);
+// ================= DEBUG ROUTE =================
+app.get("/api/test-chat", (req, res) => {
+  res.json({ message: "Chat route working with Gemini ✅" });
+});
 
-// 🚨 EXTRA SAFETY (does NOT change logic)
+// ================= ENV DEBUG =================
+console.log("ENV CHECK → RAZORPAY_KEY_ID:", process.env.RAZORPAY_KEY_ID || "❌ NOT FOUND");
+console.log("ENV CHECK → RAZORPAY_KEY_SECRET LOADED:", !!process.env.RAZORPAY_KEY_SECRET);
+console.log("ENV CHECK → GEMINI KEY LOADED:", !!process.env.GEMINI_API_KEY); // ✅ UPDATED
+
 if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
   console.warn("⚠️ Razorpay keys missing in .env");
 }
@@ -75,6 +79,7 @@ mongoose
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`🌐 Health check → http://localhost:${PORT}/`);
+      console.log(`🤖 Chat test → http://localhost:${PORT}/api/test-chat`);
     });
   })
   .catch((err) => {
