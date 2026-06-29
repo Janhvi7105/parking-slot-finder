@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
+import API from "../api";
 
 export default function BookingHistory() {
   const { state } = useLocation();
@@ -39,7 +40,7 @@ export default function BookingHistory() {
       }
 
       const res = await axios.get(
-        `http://localhost:5000/api/bookings/my-bookings/${user._id}`
+        `${API}/bookings/my-bookings/${user._id}`
       );
 
       setBookings(res.data.bookings || res.data || []);
@@ -67,7 +68,7 @@ export default function BookingHistory() {
       const token = localStorage.getItem("token");
 
       const res = await axios.post(
-        "http://localhost:5000/api/bookings/feedback",
+        `${API}/bookings/feedback`,
         {
           bookingId: selectedBooking._id,
           rating,

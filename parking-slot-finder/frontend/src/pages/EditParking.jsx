@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
+import API from "../api";
 
 export default function EditParking() {
   const { id } = useParams();
@@ -16,7 +17,7 @@ export default function EditParking() {
 
   const fetchParking = useCallback(async () => {
     const res = await axios.get(
-      `http://localhost:5000/api/parking/${id}`,
+      `${API}/parking/${id}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -32,7 +33,7 @@ export default function EditParking() {
 
   const updateParking = async () => {
     await axios.put(
-      `http://localhost:5000/api/parking/${id}`,
+      `${API}/parking/${id}`,
       form,
       {
         headers: {

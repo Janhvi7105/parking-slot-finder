@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import API from "../api";
 
 export default function ChatBot() {
   const [open, setOpen] = useState(false);
@@ -29,7 +30,7 @@ export default function ChatBot() {
     setInput("");
 
     try {
-      const res = await axios.post("http://localhost:5000/api/chat", {
+      const res = await axios.post(`${API}/chat`, {
         message: userMessage,
       });
 

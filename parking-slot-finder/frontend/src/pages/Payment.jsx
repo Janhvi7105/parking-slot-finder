@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
+import API from "../api";
 
 export default function Payment() {
   const navigate = useNavigate();
@@ -69,7 +70,7 @@ export default function Payment() {
 
       // ✅ CREATE ORDER
       const { data } = await axios.post(
-        "http://localhost:5000/api/payment/create-order",
+        `${API}/payment/create-order`,
         { amount }
       );
 
@@ -95,7 +96,7 @@ export default function Payment() {
             console.log("💳 Razorpay success response:", response);
 
             const verifyRes = await axios.post(
-              "http://localhost:5000/api/payment/verify-payment",
+              `${API}/payment/verify-payment`,
               {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,

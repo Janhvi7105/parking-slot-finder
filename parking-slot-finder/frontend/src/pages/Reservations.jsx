@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import API from "../api";
 
 export default function Reservations() {
   const [bookings, setBookings] = useState([]);
@@ -12,7 +13,7 @@ export default function Reservations() {
       const token = localStorage.getItem("token"); // 🔐 ADMIN TOKEN
 
       const res = await axios.get(
-        "http://localhost:5000/api/bookings/admin/all",
+        `${API}/bookings/admin/all`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -38,7 +39,7 @@ export default function Reservations() {
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `http://localhost:5000/api/bookings/admin/confirm/${id}`,
+        `${API}/bookings/admin/confirm/${id}`,
         {},
         {
           headers: {
@@ -65,7 +66,7 @@ export default function Reservations() {
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `http://localhost:5000/api/bookings/admin/cancel/${id}`,
+        `${API}/bookings/admin/cancel/${id}`,
         {},
         {
           headers: {

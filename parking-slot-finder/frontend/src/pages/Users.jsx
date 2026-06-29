@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import API from "../api";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -13,7 +14,7 @@ export default function Users() {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
-        "http://localhost:5000/api/admin/users",
+        `${API}/admin/users`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -34,7 +35,7 @@ export default function Users() {
       const token = localStorage.getItem("token");
 
       await axios.delete(
-        `http://localhost:5000/api/admin/users/${id}`,
+        `${API}/admin/users/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

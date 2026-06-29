@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import API from "../api";
 
 export default function UserProfile() {
   const [form, setForm] = useState({
@@ -14,7 +15,7 @@ export default function UserProfile() {
   const fetchProfile = useCallback(async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/users/profile",
+        `${API}/users/profile`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -42,7 +43,7 @@ export default function UserProfile() {
 
     try {
       await axios.put(
-        "http://localhost:5000/api/users/profile",
+        `${API}/users/profile`,
         form,
         {
           headers: {

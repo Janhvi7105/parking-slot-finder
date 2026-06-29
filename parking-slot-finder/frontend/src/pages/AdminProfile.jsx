@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import API from "../api";
 
 export default function AdminProfile() {
   const token = localStorage.getItem("token");
@@ -14,7 +15,7 @@ export default function AdminProfile() {
   const fetchProfile = useCallback(async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/admin/profile",
+        `${API}/admin/profile`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -41,7 +42,7 @@ export default function AdminProfile() {
   const updateProfile = async () => {
     try {
       await axios.put(
-        "http://localhost:5000/api/admin/profile",
+        `${API}/admin/profile`,
         form,
         {
           headers: {

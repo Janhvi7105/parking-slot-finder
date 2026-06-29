@@ -4,6 +4,7 @@ import L from "leaflet";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API from "../api";
 
 // Custom marker icon
 const customMarker = L.divIcon({
@@ -35,7 +36,7 @@ export default function UserHome() {
   // ✅ FETCH PARKINGS
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/parking")
+      .get(`${API}/parking`)
       .then((res) => setParkings(res.data))
       .catch((err) => console.log(err));
   }, []);

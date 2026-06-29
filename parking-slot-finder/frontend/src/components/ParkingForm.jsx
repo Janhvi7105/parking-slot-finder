@@ -1,11 +1,12 @@
 import { useState } from "react";
 import axios from "axios";
+import API from "../api";
 
 export default function ParkingForm() {
   const [slot, setSlot] = useState({ slotNumber:"", lat:"", lng:"" });
 
   const addSlot = async () => {
-    await axios.post("http://localhost:5000/api/parking/add", {
+    await axios.post(`${API}/parking/add`, {
       slotNumber: slot.slotNumber,
       location: { latitude: slot.lat, longitude: slot.lng }
     });

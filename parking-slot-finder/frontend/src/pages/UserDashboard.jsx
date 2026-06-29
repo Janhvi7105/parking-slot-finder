@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import API from "../api";
 
 export default function UserDashboard() {
   const [bookings, setBookings] = useState([]);
@@ -34,7 +35,7 @@ export default function UserDashboard() {
       }
 
       const res = await axios.get(
-        `http://localhost:5000/api/bookings/my-bookings/${userId}`
+        `${API}/bookings/my-bookings/${userId}`
       );
 
       // ✅ supports both response formats (unchanged)

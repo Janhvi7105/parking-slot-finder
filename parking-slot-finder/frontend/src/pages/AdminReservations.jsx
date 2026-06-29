@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import API from "../api";
 
 export default function AdminReservations() {
   const [bookings, setBookings] = useState([]);
@@ -13,7 +14,7 @@ export default function AdminReservations() {
   const fetchBookings = useCallback(async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/bookings/admin/all",
+        `${API}/bookings/admin/all`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -39,7 +40,7 @@ export default function AdminReservations() {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/admin/confirm/${id}`,
+        `${API}/admin/confirm/${id}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -61,7 +62,7 @@ export default function AdminReservations() {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/admin/cancel/${id}`,
+        `${API}/admin/cancel/${id}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

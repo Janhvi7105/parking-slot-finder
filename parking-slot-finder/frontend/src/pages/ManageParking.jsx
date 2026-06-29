@@ -11,6 +11,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useAdminStats } from "../context/AdminStatsContext";
 import { useNavigate } from "react-router-dom";
+import API from "../api";
 
 /* ================= GOOGLE STYLE RED MARKER ================= */
 const googleRedMarker = L.divIcon({
@@ -68,7 +69,7 @@ export default function ManageParking() {
   const fetchParkings = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/parking", {
+      const res = await axios.get(`${API}/parking`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setParkings(res.data);
@@ -125,7 +126,7 @@ export default function ManageParking() {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/parking/add",
+        `${API}/parking/add`,
         data,
         {
           headers: {
@@ -149,7 +150,7 @@ export default function ManageParking() {
     if (!window.confirm("Delete this parking?")) return;
 
     await axios.delete(
-      `http://localhost:5000/api/parking/${id}`,
+      `${API}/parking/${id}`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,

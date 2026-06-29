@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import API from "../api";
 
 export default function BookParking() {
   const { id } = useParams();
@@ -26,7 +27,7 @@ export default function BookParking() {
   /* ================= FETCH PARKING ================= */
   useEffect(() => {
     axios
-      .get(`http://localhost:5000/api/parking/${id}`)
+      .get(`${API}/parking/${id}`)
       .then((res) => setParking(res.data))
       .catch((err) => console.error(err));
   }, [id]);

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { useAdminStats } from "../context/AdminStatsContext";
+import API from "../api";
 
 export default function AdminDashboard() {
   const { refreshKey } = useAdminStats();
@@ -24,7 +25,7 @@ export default function AdminDashboard() {
   const fetchStats = useCallback(async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/admin/stats",
+        `${API}/admin/stats`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -51,7 +52,7 @@ export default function AdminDashboard() {
       setLoading(true);
 
       const res = await axios.get(
-        "http://localhost:5000/api/admin/feedback",
+        `${API}/admin/feedback`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -81,7 +82,7 @@ export default function AdminDashboard() {
     try {
 
       const res = await axios.get(
-        "http://localhost:5000/api/bookings/admin/all",
+        `${API}/bookings/admin/all`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -122,7 +123,7 @@ export default function AdminDashboard() {
     try {
 
       const res = await axios.put(
-        `http://localhost:5000/api/bookings/scan-entry/${bookingId}`,
+        `${API}/bookings/scan-entry/${bookingId}`,
         {},
         {
           headers: {
@@ -150,7 +151,7 @@ export default function AdminDashboard() {
     try {
 
       const res = await axios.put(
-        `http://localhost:5000/api/bookings/scan-exit/${bookingId}`,
+        `${API}/bookings/scan-exit/${bookingId}`,
         {},
         {
           headers: {

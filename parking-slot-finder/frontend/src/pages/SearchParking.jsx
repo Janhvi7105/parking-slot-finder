@@ -10,6 +10,7 @@ import L from "leaflet";
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API from "../api";
 
 /* ================= GOOGLE STYLE RED MARKER ================= */
 const googleRedMarker = L.divIcon({
@@ -72,7 +73,7 @@ export default function SearchParking() {
   /* FETCH PARKINGS */
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/parking")
+      .get(`${API}/parking`)
       .then((res) => setParkings(res.data))
       .catch(console.error);
   }, []);
