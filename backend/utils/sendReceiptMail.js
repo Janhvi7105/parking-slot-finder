@@ -1,19 +1,21 @@
-import transporter from "../config/mailer.js";
+import { BrevoClient } from "@getbrevo/brevo";
+
+const brevo = new BrevoClient({
+  apiKey: process.env.BREVO_API_KEY,
+});
 
 export const sendReceiptMail = async (toEmail, pdfBuffer) => {
   try {
-    // ================= SAFE EMAIL =================
     const safeEmail =
       typeof toEmail === "string" ? toEmail.trim() : "";
 
     console.log("📨 Sending receipt to:", safeEmail);
 
     if (!safeEmail || !safeEmail.includes("@")) {
-      console.log("❌ Invalid email. Receipt not sent.");
+      console.log("❌ Invalid email");
       return;
     }
 
-    // ================= SAFE PDF =================
     let safeBuffer;
 
     if (Buffer.isBuffer(pdfBuffer)) {
@@ -21,18 +23,27 @@ export const sendReceiptMail = async (toEmail, pdfBuffer) => {
     } else if (pdfBuffer) {
       safeBuffer = Buffer.from(pdfBuffer);
     } else {
-      console.log("⚠️ PDF missing. Creating fallback PDF.");
       safeBuffer = Buffer.from("Receipt unavailable");
     }
 
     console.log("📎 PDF Size:", safeBuffer.length);
 
-    // ================= SEND EMAIL =================
-    const info = await transporter.sendMail({
-      from: `"Parking Slot Finder" <${process.env.EMAIL_FROM}>`,
-      to: safeEmail,
-      subject: "Parking Booking Confirmed 🎉",
-      text: `
+    const response =
+      await brevo.transactionalEmails.sendTransacEmail({
+        sender: {
+          name: "Parking Slot Finder",
+          email: process.env.EMAIL_FROM,
+        },
+
+        to: [
+          {
+            email: safeEmail,
+          },
+        ],
+
+        subject: "Parking Booking Confirmed 🎉",
+
+        textContent: `
 Hello,
 
 Your parking booking has been confirmed successfully.
@@ -40,23 +51,30 @@ Your parking booking has been confirmed successfully.
 Please find your receipt attached.
 
 Thank you for using Parking Slot Finder.
+`,
 
-Regards,
-Parking Slot Finder Team
-      `,
-      attachments: [
-        {
-          filename: "Parking_Receipt.pdf",
-          content: safeBuffer,
-          contentType: "application/pdf",
-        },
-      ],
-    });
+        htmlContent: `
+<h2>Parking Booking Confirmed ✅</h2>
 
-    console.log("✅ Receipt email sent successfully");
-    console.log("📧 Message ID:", info.messageId);
-  } catch (error) {
-    console.error("❌ Email sending failed:");
-    console.error(error);
+<p>Your parking booking has been confirmed successfully.</p>
+
+<p>Please find your receipt attached.</p>
+
+<p>Thank you for using <b>Parking Slot Finder</b>.</p>
+`,
+
+        attachment: [
+          {
+            name: "Parking_Receipt.pdf",
+            content: safeBuffer.toString("base64"),
+          },
+        ],
+      });
+
+    console.log("✅ Email sent");
+    console.log(response);
+  } catch (err) {
+    console.error("❌ Brevo API Error");
+    console.error(err);
   }
 };
