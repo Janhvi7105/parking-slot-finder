@@ -4,26 +4,22 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true, // SSL
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure: false,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000,
-  family: 4, // Force IPv4 instead of IPv6
 });
 
 transporter
   .verify()
   .then(() => {
-    console.log("📧 Mail server is ready");
+    console.log("✅ Brevo SMTP Connected");
   })
-  .catch((error) => {
-    console.error("❌ Mailer error:", error);
+  .catch((err) => {
+    console.error("❌ SMTP Error:", err);
   });
 
 export default transporter;
