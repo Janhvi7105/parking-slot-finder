@@ -1,269 +1,451 @@
-🚗 Parking Slot Finder
-A Modern Smart Parking Management System
-A complete MERN Stack solution for discovering, reserving, and managing parking spaces with secure payments, AI assistance, QR-based access, and comprehensive administrative controls.
+# 🚗 Parking Slot Finder 
 
-<div align="center">
-https://img.shields.io/badge/React-18-blue?logo=react&style=flat-square
-https://img.shields.io/badge/Node.js-Express-green?logo=node.js&style=flat-square
-https://img.shields.io/badge/MongoDB-Atlas-green?logo=mongodb&style=flat-square
-https://img.shields.io/badge/Payment-Razorpay-blue?style=flat-square
-https://img.shields.io/badge/Email-Brevo-success?style=flat-square
-https://img.shields.io/badge/AI-Google%2520Gemini-purple?style=flat-square
-https://img.shields.io/badge/License-MIT-yellow?style=flat-square
-https://img.shields.io/github/stars/Janhvi7105/parking-slot-finder?style=social
-https://img.shields.io/github/forks/Janhvi7105/parking-slot-finder?style=social
+> A modern MERN Stack based Smart Parking Management System that enables users to discover, reserve, and manage parking spaces with secure payments, AI assistance, QR-based access, PDF receipt generation, email notifications, interactive maps, and a powerful admin dashboard.
 
-</div>
-📈 Project Highlights
-<div align="center">
-✅ MERN Stack	✅ JWT Authentication	✅ Razorpay Integration
-✅ Google Gemini AI	✅ Interactive Maps	✅ QR Code Entry/Exit
-✅ PDF Receipts	✅ Email Notifications	✅ Responsive UI
-✅ Admin Dashboard	✅ Production Deployment	✅ Real-time Booking
-</div>
-🌐 Live Demo
-Platform	Link
-Live Application	parking-slot-finder-ruddy.vercel.app
-GitHub Repository	github.com/Janhvi7105/parking-slot-finder
-📸 Application Preview
-🏠 Home Page
-https://screenshots/home.png
+---
 
-👤 User Dashboard
-https://screenshots/user-dashboard.png
+## 🚀 Live Demo
 
-🗺️ Search Parking
-https://screenshots/search-parking.png
+### 🌐 Live Application
 
-🤖 AI Assistant
-https://screenshots/chatbot.png
+https://parking-slot-finder-ruddy.vercel.app
 
-👨‍💼 Admin Dashboard
-https://screenshots/admin-dashboard.png
+### 💻 GitHub Repository
 
-🅿️ Manage Parking
-https://screenshots/manage-parking.png
+https://github.com/Janhvi7105/parking-slot-finder
 
-📋 Reservations
-https://screenshots/reservations.png
+---
 
-📖 Booking History
-https://screenshots/booking-history.png
+## 📖 Project Overview
 
-📖 Project Overview
-Parking Slot Finder is a full-stack MERN application designed to revolutionize urban parking management. The platform enables users to discover nearby parking spaces, reserve them instantly, complete secure online payments, and access parking via QR-based verification—all within a seamless, intuitive interface.
+Parking Slot Finder is a full-stack MERN Stack web application designed to simplify urban parking management. Users can discover nearby parking spaces, reserve them online, make secure payments through Razorpay, receive PDF receipts via email, and access their reservations using QR code verification.
 
-The system also features a comprehensive Admin Dashboard for real-time management of parking slots, reservations, users, and parking operations, making it an all-in-one solution for modern parking infrastructure.
+The platform also provides a comprehensive Admin Dashboard for managing parking slots, reservations, users, QR-based entry & exit, and overall parking operations in real time.
 
-💡 This project demonstrates practical integration of real-world technologies, including payment gateways, AI assistance, interactive maps, PDF generation, QR codes, email automation, JWT authentication, and full-stack deployment.
+This project demonstrates practical experience in integrating multiple real-world technologies including payment gateways, AI, maps, PDF generation, QR codes, email automation, JWT authentication, and full-stack deployment.
 
-🎯 Problem Statement & Solution
-The Problem
-Finding available parking in urban areas is frustrating, time-consuming, and often leads to traffic congestion and environmental pollution.
+---
 
-Our Solution
-Parking Slot Finder provides a centralized digital platform where users can:
+## 💡 Why This Project?
 
-🔍 Search nearby parking locations in real-time
+Finding available parking in crowded cities is often frustrating and time-consuming.
 
-📱 Reserve parking slots instantly from any device
+Parking Slot Finder addresses this problem by providing a centralized platform where users can search nearby parking locations, reserve parking slots instantly, complete secure online payments, and access parking using QR-based verification.
 
-💳 Pay securely online with Razorpay
+The application combines modern web technologies with real-world business functionality to deliver a complete parking management solution.
 
-✅ Access parking using QR-based verification
+---
 
-📧 Receive PDF receipts and email confirmations
+## 🌟 Project Highlights
 
-✨ Key Features
-👤 User Features
-Feature	Description
-🔐 Authentication	Secure JWT-based registration, login, and profile management with password encryption (bcrypt)
-🗺️ Smart Search	Interactive map view with nearby parking discovery and location-based search
-🚗 Instant Booking	Reserve parking slots with vehicle type selection and real-time availability
-💳 Secure Payments	Powered by Razorpay payment gateway with instant confirmation
-📄 PDF Receipts	Auto-generated receipts with QR codes, booking details, and download option
-📧 Email Notifications	Automated confirmations with PDF attachments via Brevo Email API
-📱 QR Access	Unique QR codes for each booking enabling entry/exit verification
-🤖 AI Assistant	Google Gemini-powered chatbot for parking queries and assistance
-⭐ Feedback System	Rate and review parking experiences to help others
-👨‍💼 Admin Features
-Feature	Description
-📊 Dashboard	Real-time statistics and analytics for parking operations
-🅿️ Slot Management	Add, edit, and delete parking spaces with location mapping
-📋 Reservation Control	View, confirm, or cancel user bookings
-👥 User Management	Monitor and manage registered users
-📱 QR Verification	Scan QR codes for entry/exit validation
-⭐ Feedback Monitoring	Track and respond to user reviews and ratings
-🔄 Application Workflow
+✔ Secure JWT Authentication
 
+✔ Razorpay Payment Integration
 
+✔ Google Gemini AI Assistant
 
+✔ Interactive Parking Maps
 
+✔ QR Code Based Entry & Exit
 
+✔ PDF Receipt Generation
 
+✔ Email Notifications using Brevo
 
+✔ Comprehensive Admin Dashboard
 
+---
 
+## ⭐ Key Features Preview
 
+| Home                      | Search Parking                      |
+| ------------------------- | ----------------------------------- |
+| ![](screenshots/home.png) | ![](screenshots/search-parking.png) |
 
-🛠️ Technology Stack
-Frontend
-Technology	Purpose
-React.js	UI library for building interactive interfaces
-Leaflet	Interactive map rendering and location display
-Axios	HTTP client for API communication
-React Router	Client-side routing and navigation
-CSS3	Custom styling with responsive design
-Backend
-Technology	Purpose
-Node.js + Express.js	Server-side framework and API development
-MongoDB Atlas	Cloud-based NoSQL database
-JWT + bcryptjs	Authentication and password security
-Razorpay	Payment gateway integration
-Google Gemini AI	Intelligent chatbot assistance
-PDFKit	PDF receipt generation
-QRCode	QR code generation for bookings
-Brevo Email API	Automated email notifications
-Multer	File upload handling
-DevOps & Deployment
-Service	Purpose
-Vercel	Frontend hosting and deployment
-Render	Backend hosting and API deployment
-MongoDB Atlas	Database hosting and management
-Environment Variables	Secure configuration management
-🏗️ Architecture Overview
-text
-parking-slot-finder/
+| AI Assistant                 | Admin Dashboard                      |
+| ---------------------------- | ------------------------------------ |
+| ![](screenshots/chatbot.png) | ![](screenshots/admin-dashboard.png) |
+
+| Booking History                      | Manage Parking                      |
+| ------------------------------------ | ----------------------------------- |
+| ![](screenshots/booking-history.png) | ![](screenshots/manage-parking.png) |
+
+---
+
+## ✨ Features
+
+### 👤 User Authentication
+
+* User Registration
+* Secure Login
+* JWT Authentication
+* Password Encryption (bcrypt)
+* Profile Management
+
+### 🚗 Smart Parking Reservation
+
+* Search Nearby Parking Slots
+* Interactive Map View
+* Parking Availability
+* Instant Reservation
+* Vehicle Type Selection
+* Real-Time Slot Availability
+* Booking History
+
+### 💳 Secure Online Payments
+
+Powered by Razorpay
+
+* Secure Payment Gateway
+* Payment Verification
+* Instant Booking Confirmation
+* Protected Transactions
+
+### 🗺️ Interactive Maps
+
+* Leaflet Maps
+* Parking Location Display
+* Latitude & Longitude Support
+* Location-Based Search
+
+### 📄 PDF Receipt Generation
+
+Automatically generated after successful booking.
+
+Includes:
+
+* Booking Details
+* User Information
+* Parking Details
+* Booking Duration
+* Payment Amount
+* QR Code
+* PDF Download
+
+### 📧 Email Notifications
+
+Powered by Brevo Email API.
+
+Users automatically receive:
+
+* Booking Confirmation
+* PDF Receipt
+* Booking Details
+
+### 📱 QR Code Based Entry & Exit
+
+Each booking generates a unique QR Code.
+
+Admin can:
+
+* Scan Entry
+* Scan Exit
+* Verify Booking
+* Prevent Duplicate Entry
+
+### 🤖 AI Parking Assistant
+
+Powered by Google Gemini AI.
+
+Supports:
+
+* Parking Queries
+* Booking Assistance
+* Parking Suggestions
+* General Information
+
+### ⭐ Rating & Feedback
+
+Users can:
+
+* Submit Ratings
+* Write Reviews
+* Provide Feedback
+
+Admin can monitor customer feedback.
+
+### 👨‍💼 Admin Dashboard
+
+Manage:
+
+* Parking Slots
+* Reservations
+* Users
+* QR Entry & Exit
+* Feedback
+* Dashboard Statistics
+
+---
+
+## ⚡ Key Technologies
+
+| Category       | Technology           |
+| -------------- | -------------------- |
+| Frontend       | React.js             |
+| Backend        | Node.js + Express.js |
+| Database       | MongoDB Atlas        |
+| Authentication | JWT + bcryptjs       |
+| Payment        | Razorpay             |
+| Maps           | Leaflet              |
+| AI             | Google Gemini        |
+| Email          | Brevo Email API      |
+| PDF            | PDFKit               |
+| QR Code        | QRCode               |
+| Deployment     | Vercel + Render      |
+
+---
+
+## 🏗 Project Architecture
+
+```text
+parking-slot-finder
 │
-├── backend/
-│   ├── config/          # Environment configuration
-│   ├── controllers/     # Business logic
-│   ├── middleware/      # Authentication & validation
-│   ├── models/          # MongoDB schemas
-│   ├── routes/          # API endpoints
-│   ├── utils/           # Helper functions
-│   └── server.js        # Application entry point
+├── backend
+│   ├── config
+│   ├── controllers
+│   ├── middleware
+│   ├── models
+│   ├── routes
+│   ├── utils
+│   ├── uploads
+│   └── server.js
 │
-├── frontend/
-│   ├── public/          # Static assets
-│   ├── src/
-│   │   ├── components/  # Reusable UI components
-│   │   ├── pages/       # Application views
-│   │   ├── services/    # API services
-│   │   └── App.js       # Root component
+├── frontend
+│   ├── public
+│   ├── src
+│   │   ├── components
+│   │   ├── pages
+│   │   ├── services
+│   │   └── App.js
 │
-├── screenshots/         # Application previews
-├── README.md            # Documentation
-└── package.json         # Dependencies
-📦 Installation Guide
-Prerequisites
-Node.js (v14+)
+├── screenshots
+├── README.md
+└── package.json
+```
 
-MongoDB Atlas Account
+---
 
-Razorpay Account
+## 🔄 Project Workflow
 
-Brevo Account
+Register/Login
 
-Google Gemini API Key
+⬇
 
-1. Clone the Repository
-bash
+Search Nearby Parking
+
+⬇
+
+Choose Parking Slot
+
+⬇
+
+Select Date & Time
+
+⬇
+
+Secure Razorpay Payment
+
+⬇
+
+Booking Confirmed
+
+⬇
+
+PDF Receipt Generated
+
+⬇
+
+Email Notification Sent
+
+⬇
+
+QR Code Generated
+
+⬇
+
+Admin Scans Entry & Exit
+
+---
+
+## ⚙️ Installation
+
+### Clone Repository
+
+```bash
 git clone https://github.com/Janhvi7105/parking-slot-finder.git
+
 cd parking-slot-finder
-2. Backend Setup
-bash
+```
+
+### Backend
+
+```bash
 cd backend
-npm install
-Create .env file in the backend directory:
 
-env
+npm install
+```
+
+Create `.env`
+
+```env
 PORT=5000
+
 MONGO_URI=YOUR_MONGO_URI
+
 JWT_SECRET=YOUR_SECRET
+
 RAZORPAY_KEY_ID=YOUR_KEY
+
 RAZORPAY_KEY_SECRET=YOUR_SECRET
+
 BREVO_API_KEY=YOUR_API_KEY
+
 EMAIL_FROM=YOUR_EMAIL
+
 GEMINI_API_KEY=YOUR_API_KEY
-Run the backend:
+```
 
-bash
+Run backend
+
+```bash
 npm run dev
-3. Frontend Setup
-bash
+```
+
+### Frontend
+
+```bash
 cd frontend
+
 npm install
+
 npm start
-The application will be available at http://localhost:3000
+```
 
-🚀 Deployment Guide
-Service	Platform	Resource
-Frontend	Vercel	vercel.com
-Backend	Render	render.com
-Database	MongoDB Atlas	mongodb.com
-Payments	Razorpay	razorpay.com
-Email	Brevo	brevo.com
-AI	Google Gemini	ai.google.dev
-📌 Learning Outcomes
-This project demonstrates proficiency in:
+---
 
-✅ MERN Stack Development — Full-stack application architecture
+## 🌐 Deployment
 
-✅ REST API Development — Structured endpoint design and implementation
+| Service  | Platform      |
+| -------- | ------------- |
+| Frontend | Vercel        |
+| Backend  | Render        |
+| Database | MongoDB Atlas |
+| Payment  | Razorpay      |
+| Email    | Brevo         |
+| AI       | Google Gemini |
 
-✅ MongoDB Integration — Database schema design and CRUD operations
+---
 
-✅ JWT Authentication — Secure user authentication and authorization
+## 📸 Application Preview
 
-✅ Payment Gateway Integration — Razorpay payment processing
+Below are screenshots showcasing the major features of the application.
 
-✅ AI Integration — Google Gemini chatbot implementation
+### 🏠 Home
 
-✅ QR Code Generation — Unique QR codes for verification
+![Home](screenshots/home.png)
 
-✅ PDF Generation — Automated receipt creation
+---
 
-✅ Email Automation — Brevo API for notifications
+### 👤 User Dashboard
 
-✅ Interactive Maps — Leaflet for location-based services
+![User Dashboard](screenshots/dashboard.png)
 
-✅ Admin Dashboard Development — Real-time monitoring and management
+---
 
-✅ Responsive UI Design — Mobile-first approach
+### 🗺️ Search Parking
 
-✅ Environment Management — Secure configuration handling
+![Search Parking](screenshots/search-parking.png)
 
-✅ Full-Stack Deployment — Vercel + Render + MongoDB Atlas
+---
 
-🚀 Future Enhancements
-Feature	Description
-🗺️ Live Availability	Real-time slot availability monitoring
-📍 GPS Navigation	Turn-by-turn navigation to parking spots
-📱 Mobile App	Native iOS/Android application
-🏢 Multi-Level Support	Support for multi-story parking complexes
-🤖 AI Recommendations	Smart parking suggestions based on patterns
-💎 Subscription Plans	Premium membership options
-📈 Analytics Dashboard	Advanced analytics and insights
-🔔 Push Notifications	Real-time alerts and reminders
-🌙 Dark Mode	Enhanced visual experience
-🎯 Conclusion
-Parking Slot Finder successfully demonstrates the implementation of a complete smart parking reservation system by integrating:
+### 📖 Booking History
 
-🔐 Secure authentication with JWT
+![Booking History](screenshots/booking-history.png)
 
-💳 Payment processing with Razorpay
+---
 
-📱 QR-based verification for access control
+### 🤖 AI Assistant
 
-🤖 AI-powered assistance with Google Gemini
+![Chatbot](screenshots/chatbot.png)
 
-🗺️ Interactive maps with Leaflet
+---
 
-📄 PDF generation for receipts
+### 👨‍💼 Admin Dashboard
 
-📧 Email automation with Brevo
+![Admin Dashboard](screenshots/admin-dashboard.png)
 
-👨‍💼 Comprehensive admin dashboard
+---
 
-This project serves as a practical demonstration of integrating multiple real-world technologies into a scalable, production-ready MERN stack application.
+### 🅿️ Manage Parking
+
+![Manage Parking](screenshots/manage-parking.png)
+
+---
+
+### 📋 Reservations
+
+![Reservations](screenshots/reservations.png)
+
+---
+
+## 📖 How to Use
+
+1. Register or Login.
+2. Search nearby parking spaces.
+3. Select your preferred parking location.
+4. Choose booking date and time.
+5. Complete payment using Razorpay.
+6. Receive booking confirmation.
+7. Download PDF receipt.
+8. Receive confirmation email.
+9. Use QR Code for parking entry & exit.
+
+---
+
+## 📌 Learning Outcomes
+
+This project demonstrates practical experience in:
+
+* MERN Stack Development
+* REST API Development
+* MongoDB Integration
+* JWT Authentication
+* Razorpay Integration
+* Google Gemini AI Integration
+* QR Code Generation
+* PDF Generation
+* Email Automation using Brevo
+* Interactive Maps
+* Admin Dashboard Development
+* Responsive UI Design
+* Environment Variable Management
+* Full-Stack Deployment
+
+---
+
+## 🚀 Future Enhancements
+
+* Live Parking Availability
+* GPS Navigation
+* Mobile Application
+* Multi-Level Parking Support
+* AI Parking Recommendation
+* Subscription Plans
+* Parking Analytics Dashboard
+* Push Notifications
+* Dark Mode
+
+---
+
+## 🎯 Conclusion
+
+Parking Slot Finder demonstrates the implementation of a complete smart parking reservation system by combining secure authentication, payment processing, QR-based verification, AI-powered assistance, interactive maps, PDF generation, email automation, and an advanced administrative dashboard into a scalable MERN Stack application.
+
+---
+
+## 👩‍💻 Author
+
+**Janhvi Ghuikar**
+
+GitHub: https://github.com/Janhvi7105
+
