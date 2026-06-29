@@ -1,99 +1,126 @@
-import puppeteer from "puppeteer";
+import PDFDocument from "pdfkit";
 
 export const generateReceiptPDF = async (booking, qrImage) => {
-  let browser;
+  return new Promise((resolve, reject) => {
+    try {
+      console.log("🧾 Generating PDF using PDFKit...");
 
-  try {
-    console.log("🧾 PDF booking data:", booking);
+      const safeBooking = booking || {};
 
-    const safeBooking = booking || {};
+      const doc = new PDFDocument({
+        margin: 50,
+        size: "A4",
+      });
 
-    const safeQR =
-      qrImage &&
-      typeof qrImage === "string" &&
-      qrImage.startsWith("data:image")
-        ? qrImage
-        : null;
+      const buffers = [];
 
-    const html = `
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8" />
-<title>Parking Receipt</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    padding: 24px;
-    color: #000;
-  }
-  h2 { color: green; margin-bottom: 4px; }
-  h3 { margin-top: 0; }
-  p { margin: 6px 0; }
-</style>
-</head>
-<body>
-  <h2>Parking Slot Finder</h2>
-  <h3>Booking Confirmed ✅</h3>
+      doc.on("data", (chunk) => buffers.push(chunk));
 
-  <p><b>Parking:</b> ${safeBooking.parkingName || "-"}</p>
-  <p><b>Vehicle Type:</b> ${safeBooking.vehicleType || "-"}</p>
-  <p><b>Date:</b> ${safeBooking.bookingDate || "-"}</p>
-  <p><b>Time:</b> ${safeBooking.fromTime || "-"} - ${safeBooking.toTime || "-"}</p>
-  <p><b>Amount Paid:</b> ₹${safeBooking.amount ?? 0}</p>
-  <p><b>Status:</b> Confirmed</p>
+      doc.on("end", () => {
+        const pdfBuffer = Buffer.concat(buffers);
+        console.log("📄 Generated PDF size:", pdfBuffer.length);
+        resolve(pdfBuffer);
+      });
 
-  <br/>
+      doc.on("error", (err) => {
+        reject(err);
+      });
 
-  ${
-    safeQR
-      ? `<img src="${safeQR}" width="140" />`
-      : `<p style="color:#888;">QR not available</p>`
-  }
+      // ================= HEADER =================
 
-  <p>Scan this QR at parking entry</p>
+      doc
+        .fontSize(24)
+        .fillColor("green")
+        .text("Parking Slot Finder", {
+          align: "center",
+        });
 
-  <hr/>
-  <p>Thank you for using Parking Slot Finder 🚗</p>
-</body>
-</html>
-`;
+      doc.moveDown();
 
-    console.log("🚀 Launching Chrome for PDF...");
+      doc
+        .fontSize(18)
+        .fillColor("black")
+        .text("Booking Confirmation Receipt", {
+          align: "center",
+        });
 
-    browser = await puppeteer.launch({
-      headless: "new",
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-gpu",
-      ],
-    });
+      doc.moveDown(2);
 
-    const page = await browser.newPage();
+      // ================= BOOKING DETAILS =================
 
-    await page.setContent(html, {
-      waitUntil: "domcontentloaded",
-    });
+      doc.fontSize(13);
 
-    // small render wait (important on Windows)
-    await new Promise((resolve) => setTimeout(resolve, 500));
+      doc.text(`Parking Name : ${safeBooking.parkingName || "-"}`);
+      doc.moveDown();
 
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      printBackground: true,
-    });
+      doc.text(`Location : ${safeBooking.location || "-"}`);
+      doc.moveDown();
 
-    console.log("📄 Generated PDF size:", pdfBuffer?.length || 0);
+      doc.text(`Vehicle Type : ${safeBooking.vehicleType || "-"}`);
+      doc.moveDown();
 
-    return pdfBuffer;
-  } catch (error) {
-    console.error("❌ Receipt PDF generation error:", error);
-    throw error;
-  } finally {
-    if (browser) {
-      await browser.close();
+      doc.text(`Booking Date : ${safeBooking.bookingDate || "-"}`);
+      doc.moveDown();
+
+      doc.text(
+        `Time : ${safeBooking.fromTime || "-"}  -  ${safeBooking.toTime || "-"}`
+      );
+      doc.moveDown();
+
+      doc.text(`Amount Paid : ₹${safeBooking.amount || 0}`);
+      doc.moveDown();
+
+      doc.text(`Payment ID : ${safeBooking.paymentId || "-"}`);
+      doc.moveDown();
+
+      doc.text(`Status : ${safeBooking.status || "Confirmed"}`);
+      doc.moveDown(2);
+
+      // ================= QR CODE =================
+
+      if (
+        qrImage &&
+        typeof qrImage === "string" &&
+        qrImage.startsWith("data:image")
+      ) {
+        try {
+          const base64 = qrImage.replace(
+            /^data:image\/png;base64,/,
+            ""
+          );
+
+          const qrBuffer = Buffer.from(base64, "base64");
+
+          doc.image(qrBuffer, {
+            fit: [140, 140],
+            align: "center",
+          });
+
+          doc.moveDown();
+
+          doc.text("Scan this QR at Parking Entry", {
+            align: "center",
+          });
+        } catch (err) {
+          console.log("QR image could not be added.");
+        }
+      }
+
+      // ================= FOOTER =================
+
+      doc.moveDown(3);
+
+      doc
+        .fontSize(14)
+        .fillColor("green")
+        .text("Thank you for using Parking Slot Finder!", {
+          align: "center",
+        });
+
+      doc.end();
+    } catch (error) {
+      console.error("❌ PDF Generation Error:", error);
+      reject(error);
     }
-  }
+  });
 };
