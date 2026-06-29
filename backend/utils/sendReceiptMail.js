@@ -2,20 +2,18 @@ import transporter from "../config/mailer.js";
 
 export const sendReceiptMail = async (toEmail, pdfBuffer) => {
   try {
-    /* ================= SAFE EMAIL GUARD ================= */
+    // ================= SAFE EMAIL =================
     const safeEmail =
       typeof toEmail === "string" ? toEmail.trim() : "";
 
-    console.log("📨 sending email to:", safeEmail);
-    console.log("📎 Incoming PDF buffer length:", pdfBuffer?.length);
+    console.log("📨 Sending receipt to:", safeEmail);
 
-    // ❗ Prevent invalid email
     if (!safeEmail || !safeEmail.includes("@")) {
-      console.log("❌ Invalid or empty email — mail skipped");
+      console.log("❌ Invalid email. Receipt not sent.");
       return;
     }
 
-    /* ================= SAFE BUFFER ================= */
+    // ================= SAFE PDF =================
     let safeBuffer;
 
     if (Buffer.isBuffer(pdfBuffer)) {
@@ -23,17 +21,29 @@ export const sendReceiptMail = async (toEmail, pdfBuffer) => {
     } else if (pdfBuffer) {
       safeBuffer = Buffer.from(pdfBuffer);
     } else {
-      console.log("⚠️ No PDF provided — creating empty fallback");
+      console.log("⚠️ PDF missing. Creating fallback PDF.");
       safeBuffer = Buffer.from("Receipt unavailable");
     }
 
-    console.log("📎 Final PDF buffer length:", safeBuffer.length);
+    console.log("📎 PDF Size:", safeBuffer.length);
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+    // ================= SEND EMAIL =================
+    const info = await transporter.sendMail({
+      from: `"Parking Slot Finder" <${process.env.EMAIL_FROM}>`,
       to: safeEmail,
       subject: "Parking Booking Confirmed 🎉",
-      text: "Your parking booking is confirmed. Receipt attached.",
+      text: `
+Hello,
+
+Your parking booking has been confirmed successfully.
+
+Please find your receipt attached.
+
+Thank you for using Parking Slot Finder.
+
+Regards,
+Parking Slot Finder Team
+      `,
       attachments: [
         {
           filename: "Parking_Receipt.pdf",
@@ -43,8 +53,10 @@ export const sendReceiptMail = async (toEmail, pdfBuffer) => {
       ],
     });
 
-    console.log("📧 Receipt email sent successfully");
+    console.log("✅ Receipt email sent successfully");
+    console.log("📧 Message ID:", info.messageId);
   } catch (error) {
-    console.error("❌ Email sending failed:", error);
+    console.error("❌ Email sending failed:");
+    console.error(error);
   }
 };
