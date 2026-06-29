@@ -62,9 +62,7 @@ export const generateReceiptPDF = async (booking, qrImage) => {
     console.log("🚀 Launching Chrome for PDF...");
 
     browser = await puppeteer.launch({
-      executablePath:
-        "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-      headless: true,
+      headless: "new",
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
